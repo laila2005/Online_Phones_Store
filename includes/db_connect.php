@@ -1,4 +1,8 @@
 <?php
+if (!defined("SECURE_ACCESS")) {
+    die("Access denied.");
+}
+
 // Database connection parameters
 $servername = "localhost";
 $username = "root";
