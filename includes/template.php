@@ -17,8 +17,8 @@ if (!defined("SECURE_ACCESS")) {
         rel="stylesheet"
     >
 
-    <!-- ممكن تحط ملف CSS خاص بك هنا -->
-    <!-- <link rel="stylesheet" href="assets/css/style.css"> -->
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 
@@ -52,8 +52,8 @@ if (!defined("SECURE_ACCESS")) {
 <!-- Bootstrap Bundle (JS + Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- سكريبتات خاصة بالمشروع هتحطها هنا بعدين -->
-<!-- <script src="assets/js/main.js"></script> -->
+<!-- Project Scripts -->
+<script src="assets/js/main.js"></script>
 
 </body>
 </html>
