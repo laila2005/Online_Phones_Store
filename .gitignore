@@ -1,5 +1,5 @@
 # Database connection file (contains sensitive credentials)
-includes/db_connect.php
+
 
 # IDE and Editor files
 .vscode/

@@ -67,6 +67,12 @@ $dbname = "ecommerce_db";
 
 **If your MySQL setup is different**, you may need to adjust these values.
 
+### Setting Up MySQL Password (Optional)
+
+If you want to set a password for your MySQL root user, see the detailed guide: **`MYSQL_CREDENTIALS_SETUP.md`**
+
+After setting a MySQL password, remember to update the `$password` value in `includes/db_connect.php` to match.
+
 ## Default Admin Credentials
 
 After importing the database, you can login to the admin panel with:
