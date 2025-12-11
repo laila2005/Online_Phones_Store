@@ -1,0 +1,102 @@
+===============================================
+QUICK FIX COMMANDS FOR MYSQL WON'T START
+===============================================
+
+MOST COMMON FIX - Kill Process Using Port 3306
+-----------------------------------------------
+
+1. Open Command Prompt as Administrator
+
+2. Check what's using port 3306:
+   netstat -ano | findstr :3306
+
+3. You'll see something like:
+   TCP    0.0.0.0:3306    LISTENING    1234
+   
+4. Kill that process (replace 1234 with your PID):
+   taskkill /PID 1234 /F
+
+5. Try starting MySQL in XAMPP again
+
+
+CHECK FOR OTHER MYSQL SERVICES
+-------------------------------
+
+1. Press Win + R
+2. Type: services.msc
+3. Press Enter
+4. Look for any MySQL services
+5. Right-click → Stop
+6. Right-click → Properties → Set to "Manual"
+
+
+CHECK ERROR LOG
+---------------
+
+Open this file to see the actual error:
+C:\xampp\mysql\data\mysql_error.log
+
+Look at the last 20-30 lines
+
+
+RESTORE MYSQL DATA (IF CORRUPTED)
+----------------------------------
+
+1. Stop MySQL in XAMPP
+2. Go to: C:\xampp\mysql\data
+3. Rename "data" folder to "data_old"
+4. Go to: C:\xampp\mysql\backup
+5. Copy the "data" folder
+6. Paste into: C:\xampp\mysql\
+7. Start MySQL in XAMPP
+8. Re-import database: database/fresh_setup.sql
+
+
+CHANGE MYSQL PORT (IF PORT BLOCKED)
+------------------------------------
+
+1. Open: C:\xampp\mysql\bin\my.ini
+2. Find: port=3306
+3. Change to: port=3307
+4. Save file
+5. Update includes/db_connect.php:
+   $servername = "localhost:3307";
+6. Restart MySQL
+
+
+RUN AS ADMINISTRATOR
+--------------------
+
+1. Close XAMPP Control Panel
+2. Right-click XAMPP Control Panel icon
+3. Select "Run as Administrator"
+4. Try starting MySQL
+
+
+DISABLE ANTIVIRUS TEMPORARILY
+------------------------------
+
+1. Temporarily disable antivirus
+2. Try starting MySQL
+3. If it works, add exception for:
+   C:\xampp\mysql\bin\mysqld.exe
+
+
+LAST RESORT - REINSTALL XAMPP
+------------------------------
+
+1. Backup: C:\xampp\htdocs\Online_Phones_Store
+2. Uninstall XAMPP
+3. Delete: C:\xampp folder
+4. Restart computer
+5. Download fresh XAMPP
+6. Install XAMPP
+7. Copy project back
+8. Import database/fresh_setup.sql
+
+
+===============================================
+TELL YOUR COLLABORATOR TO TRY THESE IN ORDER
+===============================================
+
+See FIX_MYSQL_WONT_START.md for detailed instructions
