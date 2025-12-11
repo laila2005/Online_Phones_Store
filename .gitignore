@@ -1,0 +1,27 @@
+# Database connection file (contains sensitive credentials)
+includes/db_connect.php
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# User uploaded files (if you add file upload feature)
+uploads/
+images/uploads/

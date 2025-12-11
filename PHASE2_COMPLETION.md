@@ -8,7 +8,7 @@ All tasks for Phase 2 (Student 3: The Shop Window) have been successfully comple
 ## Completed Tasks
 
 ### ✅ Task 2.10: Bootstrap Setup
-**Status:** Completed  
+**Status:** Completed
 **File:** `includes/template.php`
 
 - Bootstrap 5 CSS and JS are properly linked
