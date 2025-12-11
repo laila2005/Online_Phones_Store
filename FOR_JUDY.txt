@@ -1,0 +1,102 @@
+===============================================
+JUDY - FIX FOR INFINITE LOADING ISSUE
+===============================================
+
+Your MySQL is running but the website keeps loading forever.
+This is almost always because the DATABASE DOESN'T EXIST.
+
+STEP 1: RUN DIAGNOSTIC
+-----------------------
+Open your browser and go to:
+http://localhost/Online_Phones_Store/diagnose.php
+
+This will tell you EXACTLY what's wrong.
+
+
+MOST LIKELY FIX: IMPORT THE DATABASE
+-------------------------------------
+
+You probably haven't imported the database yet!
+
+1. Open phpMyAdmin:
+   http://localhost/phpmyadmin
+
+2. Click "Import" tab at the top
+
+3. Click "Choose File"
+
+4. Select: database/fresh_setup.sql
+   (from your Online_Phones_Store folder)
+
+5. Click "Go" at the bottom
+
+6. Wait for success message
+
+7. Try the website again:
+   http://localhost/Online_Phones_Store/
+
+
+IF PHPMYADMIN WON'T LOAD
+-------------------------
+
+If phpMyAdmin also keeps loading forever:
+
+1. Stop MySQL in XAMPP
+2. Wait 5 seconds
+3. Start MySQL again
+4. Try phpMyAdmin again
+
+
+VERIFY YOUR SETUP
+-----------------
+
+After importing database, check:
+
+1. phpMyAdmin shows "ecommerce_db" in left sidebar
+2. Click on it - should show 9 tables
+3. Click on "products" table - should show 24 rows
+
+
+TEST THE WEBSITE
+----------------
+
+After importing database:
+
+Main site: http://localhost/Online_Phones_Store/
+Admin: http://localhost/Online_Phones_Store/admin/login.php
+Test: http://localhost/Online_Phones_Store/diagnose.php
+
+
+WHAT'S HAPPENING
+----------------
+
+When you try to load the website:
+- PHP tries to connect to database "ecommerce_db"
+- Database doesn't exist
+- Connection keeps trying and trying
+- Page never loads
+
+Solution: Import the database!
+
+
+IF STILL NOT WORKING
+--------------------
+
+1. Run diagnose.php and share the results
+2. Check if MySQL is actually running (green in XAMPP)
+3. Make sure project is in: C:\xampp\htdocs\Online_Phones_Store
+4. Restart computer and try again
+
+
+QUICK CHECKLIST
+---------------
+
+□ MySQL is running (green in XAMPP)
+□ Imported database/fresh_setup.sql via phpMyAdmin
+□ Database "ecommerce_db" appears in phpMyAdmin
+□ Project is in C:\xampp\htdocs\Online_Phones_Store
+□ Using correct URL: http://localhost/Online_Phones_Store/
+
+If all checked, website should work!
+
+===============================================
