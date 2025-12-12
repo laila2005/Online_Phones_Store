@@ -15,7 +15,7 @@ ob_start();
 <div class="container">
     <div class="row mb-4">
         <div class="col-12">
-            <h1 class="welcome to our store">Welcome to Online Phones Store</h1>
+            <h1 class="display-4">Welcome to our store</h1>
             <p class="lead">Browse our latest collection of smartphones</p>
         </div>
     </div>
