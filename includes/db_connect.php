@@ -6,7 +6,7 @@ if (!defined("SECURE_ACCESS")) {
 // Database connection parameters
 $servername = "localhost";
 $username = "root";
-$password = ""; 
+$password = "";
 $dbname = "ecommerce_db";
 
 // Create connection
