@@ -1,4 +1,5 @@
 <?php
+define("SECURE_ACCESS", true);
 include "../includes/auth.php";
 include "../includes/db_connect.php";
 
