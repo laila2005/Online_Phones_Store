@@ -14,8 +14,10 @@ $result = mysqli_query($conn, $query);
 <table border="1" cellpadding="8">
 <tr>
     <th>ID</th>
+    <th>Image</th>
     <th>Name</th>
     <th>Price</th>
+    <th>Category</th>
     <th>Description</th>
     <th>Actions</th>
 </tr>
@@ -23,9 +25,17 @@ $result = mysqli_query($conn, $query);
 <?php while($row = mysqli_fetch_assoc($result)): ?>
 <tr>
     <td><?= $row['id']; ?></td>
+    <td>
+        <?php if(!empty($row['image_url'])): ?>
+            <img src="<?= $row['image_url']; ?>" alt="<?= $row['name']; ?>" style="width: 80px; height: 80px; object-fit: cover;">
+        <?php else: ?>
+            <em>No image</em>
+        <?php endif; ?>
+    </td>
     <td><?= $row['name']; ?></td>
-    <td><?= $row['price']; ?></td>
-    <td><?= $row['description']; ?></td>
+    <td>$<?= number_format($row['price'], 2); ?></td>
+    <td><?= $row['category']; ?></td>
+    <td><?= substr($row['description'], 0, 50); ?><?= strlen($row['description']) > 50 ? '...' : ''; ?></td>
     <td>
         <a href="edit.php?id=<?= $row['id']; ?>">Edit</a> |
         <a href="delete.php?id=<?= $row['id']; ?>">Delete</a>
