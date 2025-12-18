@@ -33,7 +33,10 @@ if (!defined("SECURE_ACCESS")) {
                 <li class="nav-item">
                     <a class="nav-link active" href="index.php">Home</a>
                 </li>
-                <!-- هتضيف لينكات تانية بعدين (Cart, Login, ...) -->
+                <li class="nav-item">
+                    <a class="nav-link" href="Cart.php">Cart</a>
+                </li>
+                <!-- هتضيف لينكات تانية بعدين (Login, ...) -->
             </ul>
         </div>
     </div>
@@ -53,7 +56,7 @@ if (!defined("SECURE_ACCESS")) {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- Project Scripts -->
-<script src="assets/js/main.js"></script>
+<script src="assets/js/main.js?v=<?= @filemtime(__DIR__ . '/../assets/js/main.js') ?: time() ?>"></script>
 
 </body>
 </html>

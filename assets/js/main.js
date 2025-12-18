@@ -9,25 +9,43 @@ document.addEventListener('DOMContentLoaded', function() {
     addToCartButtons.forEach(button => {
         button.addEventListener('click', function() {
             const productId = this.getAttribute('data-id');
-            
-            // For now, just show an alert
-            // This will be replaced with actual cart functionality later
-            alert('Product ' + productId + ' added to cart!\n\nCart functionality will be implemented in the next phase.');
-            
-            // Optional: Add visual feedback
+
             const originalText = this.innerHTML;
-            this.innerHTML = 'Added!';
-            this.classList.remove('btn-success');
-            this.classList.add('btn-secondary');
+            const originalDisabled = this.disabled;
+
             this.disabled = true;
-            
-            // Reset button after 2 seconds
-            setTimeout(() => {
+            this.innerHTML = 'Adding...';
+
+            const formData = new FormData();
+            formData.append('product_id', productId);
+            formData.append('quantity', '1');
+
+            fetch('add_to_cart.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data || !data.success) {
+                    throw new Error((data && data.message) ? data.message : 'Failed to add to cart');
+                }
+
+                this.innerHTML = 'Added!';
+                this.classList.remove('btn-success');
+                this.classList.add('btn-secondary');
+
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.classList.remove('btn-secondary');
+                    this.classList.add('btn-success');
+                    this.disabled = originalDisabled;
+                }, 1200);
+            })
+            .catch(err => {
+                alert(err && err.message ? err.message : 'Could not add to cart');
                 this.innerHTML = originalText;
-                this.classList.remove('btn-secondary');
-                this.classList.add('btn-success');
-                this.disabled = false;
-            }, 2000);
+                this.disabled = originalDisabled;
+            });
         });
     });
     
