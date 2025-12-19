@@ -3,7 +3,20 @@ define("SECURE_ACCESS", true);
 
 session_start();
 
+require_once 'includes/user_auth.php';
+require_once 'includes/db_connect.php';
+
+require_login('checkout.php');
+
 $pageTitle = "Checkout - Online Phones Store";
+
+$user_id = get_current_user_id();
+$stmt = $conn->prepare("SELECT full_name, email, phone, address FROM users WHERE id = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$user_data = $result->fetch_assoc();
+$stmt->close();
 
 ob_start();
 ?>
@@ -26,17 +39,20 @@ ob_start();
                     <div class="row g-3">
                         <div class="col-12 col-md-6">
                             <label for="customer_name" class="form-label">Full Name</label>
-                            <input type="text" class="form-control" id="customer_name" name="customer_name" required>
+                            <input type="text" class="form-control" id="customer_name" name="customer_name" 
+                                   value="<?= htmlspecialchars($user_data['full_name'] ?? '') ?>" required>
                         </div>
 
                         <div class="col-12 col-md-6">
                             <label for="customer_email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="customer_email" name="customer_email" required>
+                            <input type="email" class="form-control" id="customer_email" name="customer_email" 
+                                   value="<?= htmlspecialchars($user_data['email'] ?? '') ?>" required>
                         </div>
 
                         <div class="col-12 col-md-6">
                             <label for="customer_phone" class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" id="customer_phone" name="customer_phone" placeholder="+1 (555) 123-4567" required>
+                            <input type="tel" class="form-control" id="customer_phone" name="customer_phone" 
+                                   value="<?= htmlspecialchars($user_data['phone'] ?? '') ?>" placeholder="+1 (555) 123-4567" required>
                             <div class="form-text">We'll use this to contact you about your order.</div>
                         </div>
 
@@ -48,7 +64,7 @@ ob_start();
 
                         <div class="col-12">
                             <label for="customer_address" class="form-label">Address</label>
-                            <textarea class="form-control" id="customer_address" name="customer_address" rows="3" required></textarea>
+                            <textarea class="form-control" id="customer_address" name="customer_address" rows="3" required><?= htmlspecialchars($user_data['address'] ?? '') ?></textarea>
                         </div>
 
                         <div class="col-12">

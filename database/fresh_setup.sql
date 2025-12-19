@@ -1,35 +1,130 @@
 -- ============================================
--- Online Phones Store - Complete Database Setup
+-- PROFESSIONAL ELECTRONICS STORE DATABASE
 -- ============================================
--- This file creates a fresh database from scratch
--- All team members can use this to set up their local environment
+-- Database: electronics_store
+-- Version: 2.0
+-- Description: Comprehensive e-commerce platform for electronics
+-- ============================================
 
--- Drop existing database if it exists (CAUTION: This deletes all data!)
-DROP DATABASE IF EXISTS ecommerce_db;
-
--- Create new database
-CREATE DATABASE ecommerce_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE ecommerce_db;
+USE electronics_store;
 
 -- ============================================
--- Table: products
+-- TABLE: categories
+-- Description: Product category hierarchy
 -- ============================================
-CREATE TABLE products (
+CREATE TABLE categories (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    slug VARCHAR(100) NOT NULL UNIQUE,
     description TEXT,
-    price DECIMAL(10, 2) NOT NULL,
+    parent_id INT DEFAULT NULL,
     image_url VARCHAR(500),
-    category VARCHAR(100),
-    stock_quantity INT DEFAULT 0,
+    icon VARCHAR(50),
+    display_order INT DEFAULT 0,
+    is_active TINYINT(1) DEFAULT 1,
+    meta_title VARCHAR(255),
+    meta_description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_category (category),
-    INDEX idx_price (price)
+    FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL,
+    INDEX idx_parent (parent_id),
+    INDEX idx_active (is_active)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
--- Table: users (for customer accounts)
+-- TABLE: brands
+-- Description: Product manufacturers and brands
+-- ============================================
+CREATE TABLE brands (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    slug VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    logo_url VARCHAR(500),
+    website VARCHAR(255),
+    country_origin VARCHAR(100),
+    is_featured TINYINT(1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- TABLE: products
+-- Description: Main product catalog
+-- ============================================
+CREATE TABLE products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sku VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) NOT NULL UNIQUE,
+    brand_id INT,
+    category_id INT,
+    description TEXT,
+    short_description VARCHAR(500),
+    price DECIMAL(10,2) NOT NULL,
+    compare_at_price DECIMAL(10,2) DEFAULT NULL,
+    cost_price DECIMAL(10,2) DEFAULT NULL,
+    stock_quantity INT DEFAULT 0,
+    low_stock_threshold INT DEFAULT 10,
+    weight DECIMAL(8,2) DEFAULT NULL COMMENT 'Weight in kg',
+    dimensions JSON COMMENT 'length, width, height in cm',
+    specs JSON COMMENT 'Technical specifications',
+    warranty_period INT DEFAULT 12 COMMENT 'Warranty in months',
+    is_featured TINYINT(1) DEFAULT 0,
+    is_active TINYINT(1) DEFAULT 1,
+    status ENUM('draft','active','discontinued','out_of_stock') DEFAULT 'active',
+    view_count INT DEFAULT 0,
+    meta_title VARCHAR(255),
+    meta_description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
+    FOREIGN KEY (brand_id) REFERENCES brands(id) ON DELETE SET NULL,
+    INDEX idx_price (price),
+    INDEX idx_category (category_id),
+    INDEX idx_brand (brand_id),
+    INDEX idx_status (status),
+    INDEX idx_featured (is_featured),
+    FULLTEXT idx_search (name, description)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- TABLE: product_images
+-- Description: Product image gallery
+-- ============================================
+CREATE TABLE product_images (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    image_url VARCHAR(500) NOT NULL,
+    alt_text VARCHAR(255),
+    display_order INT DEFAULT 0,
+    is_primary TINYINT(1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    INDEX idx_product (product_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- TABLE: product_variants
+-- Description: Product variations (color, size, etc.)
+-- ============================================
+CREATE TABLE product_variants (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    sku VARCHAR(50) NOT NULL UNIQUE,
+    variant_name VARCHAR(100),
+    price DECIMAL(10,2) NOT NULL,
+    stock_quantity INT DEFAULT 0,
+    specs JSON,
+    image_url VARCHAR(500),
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    INDEX idx_product (product_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- TABLE: users
+-- Description: Customer accounts
 -- ============================================
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -38,229 +133,295 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     full_name VARCHAR(100),
     phone VARCHAR(20),
-    address TEXT,
+    date_of_birth DATE,
+    gender ENUM('male','female','other','prefer_not_to_say'),
+    profile_image VARCHAR(500),
+    email_verified TINYINT(1) DEFAULT 0,
+    is_active TINYINT(1) DEFAULT 1,
+    last_login TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
--- Table: admin_users
+-- TABLE: user_addresses
+-- Description: Customer shipping/billing addresses
+-- ============================================
+CREATE TABLE user_addresses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    address_type ENUM('shipping','billing','both') DEFAULT 'shipping',
+    full_name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20),
+    address_line1 VARCHAR(255) NOT NULL,
+    address_line2 VARCHAR(255),
+    city VARCHAR(100) NOT NULL,
+    state VARCHAR(100),
+    postal_code VARCHAR(20),
+    country VARCHAR(100) NOT NULL DEFAULT 'United States',
+    is_default TINYINT(1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- TABLE: admin_users
+-- Description: Admin and staff accounts
 -- ============================================
 CREATE TABLE admin_users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    email VARCHAR(100),
+    email VARCHAR(100) NOT NULL UNIQUE,
     full_name VARCHAR(100),
-    role ENUM('admin', 'manager', 'staff') DEFAULT 'staff',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    role ENUM('super_admin','admin','manager','staff') DEFAULT 'staff',
+    permissions JSON,
+    is_active TINYINT(1) DEFAULT 1,
     last_login TIMESTAMP NULL,
-    INDEX idx_username (username)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
--- Table: orders
+-- TABLE: orders
+-- Description: Customer orders
 -- ============================================
 CREATE TABLE orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
     order_number VARCHAR(50) UNIQUE NOT NULL,
-    total_amount DECIMAL(10, 2) NOT NULL,
-    status ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending',
+    subtotal DECIMAL(10,2) NOT NULL,
+    tax_amount DECIMAL(10,2) DEFAULT 0.00,
+    shipping_cost DECIMAL(10,2) DEFAULT 0.00,
+    discount_amount DECIMAL(10,2) DEFAULT 0.00,
+    total_amount DECIMAL(10,2) NOT NULL,
+    currency VARCHAR(3) DEFAULT 'USD',
+    status ENUM('pending','confirmed','processing','shipped','delivered','cancelled','refunded') DEFAULT 'pending',
+    payment_status ENUM('pending','paid','failed','refunded') DEFAULT 'pending',
     payment_method VARCHAR(50),
-    shipping_address TEXT,
+    payment_transaction_id VARCHAR(255),
+    shipping_address_id INT,
+    billing_address_id INT,
+    tracking_number VARCHAR(100),
+    notes TEXT,
     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    paid_at TIMESTAMP NULL,
+    shipped_at TIMESTAMP NULL,
+    delivered_at TIMESTAMP NULL,
+    cancelled_at TIMESTAMP NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
-    INDEX idx_user_id (user_id),
+    FOREIGN KEY (shipping_address_id) REFERENCES user_addresses(id) ON DELETE SET NULL,
+    FOREIGN KEY (billing_address_id) REFERENCES user_addresses(id) ON DELETE SET NULL,
+    INDEX idx_user (user_id),
     INDEX idx_status (status),
     INDEX idx_order_date (order_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
--- Table: order_items
+-- TABLE: order_items
+-- Description: Items in each order
 -- ============================================
 CREATE TABLE order_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,
     product_id INT NOT NULL,
+    variant_id INT DEFAULT NULL,
+    product_name VARCHAR(255) NOT NULL,
+    sku VARCHAR(50),
     quantity INT NOT NULL DEFAULT 1,
-    price DECIMAL(10, 2) NOT NULL,
-    subtotal DECIMAL(10, 2) NOT NULL,
+    unit_price DECIMAL(10,2) NOT NULL,
+    subtotal DECIMAL(10,2) NOT NULL,
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    INDEX idx_order_id (order_id),
-    INDEX idx_product_id (product_id)
+    FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE SET NULL,
+    INDEX idx_order (order_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
--- Table: cart (shopping cart items)
+-- TABLE: cart
+-- Description: Shopping cart items
 -- ============================================
 CREATE TABLE cart (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
+    session_id VARCHAR(255),
     product_id INT NOT NULL,
+    variant_id INT DEFAULT NULL,
     quantity INT NOT NULL DEFAULT 1,
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_user_product (user_id, product_id),
-    INDEX idx_user_id (user_id)
+    FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE SET NULL,
+    UNIQUE KEY unique_user_product (user_id, product_id, variant_id),
+    INDEX idx_session (session_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
--- Table: categories (optional - for better organization)
+-- TABLE: wishlists
+-- Description: User saved/favorite products
 -- ============================================
-CREATE TABLE categories (
+CREATE TABLE wishlists (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL UNIQUE,
-    description TEXT,
-    image_url VARCHAR(500),
+    user_id INT NOT NULL,
+    product_id INT NOT NULL,
+    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_wishlist (user_id, product_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- TABLE: reviews
+-- Description: Product reviews and ratings
+-- ============================================
+CREATE TABLE reviews (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    user_id INT NOT NULL,
+    order_id INT,
+    rating TINYINT CHECK (rating BETWEEN 1 AND 5),
+    title VARCHAR(255),
+    comment TEXT,
+    is_verified_purchase TINYINT(1) DEFAULT 0,
+    is_approved TINYINT(1) DEFAULT 0,
+    helpful_count INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL,
+    INDEX idx_product (product_id),
+    INDEX idx_approved (is_approved)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- TABLE: coupons
+-- Description: Discount coupons and promo codes
+-- ============================================
+CREATE TABLE coupons (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(255),
+    discount_type ENUM('percentage','fixed_amount') NOT NULL,
+    discount_value DECIMAL(10,2) NOT NULL,
+    min_purchase_amount DECIMAL(10,2) DEFAULT 0.00,
+    max_discount_amount DECIMAL(10,2),
+    usage_limit INT DEFAULT NULL,
+    usage_count INT DEFAULT 0,
+    is_active TINYINT(1) DEFAULT 1,
+    valid_from TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    valid_until TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
--- SAMPLE DATA - Products
+-- TABLE: price_history
+-- Description: Product price change tracking
 -- ============================================
-INSERT INTO products (name, description, price, image_url, category, stock_quantity) VALUES
--- Apple Products
-('iPhone 15 Pro Max', 'Latest flagship iPhone with A17 Pro chip, titanium design, and advanced camera system with 5x optical zoom', 1199.00, 'https://images.unsplash.com/photo-1696446702061-cbd8ab720dba?w=400', 'Apple', 50),
-('iPhone 15 Pro', 'Premium iPhone with A17 Pro chip, titanium design, and pro camera system', 999.00, 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400', 'Apple', 75),
-('iPhone 15', 'Latest iPhone with Dynamic Island, 48MP camera, and all-day battery life', 799.00, 'https://images.unsplash.com/photo-1678652197950-d4c0268e8f18?w=400', 'Apple', 100),
-('iPhone 14 Pro', 'Previous generation Pro model with excellent performance and camera', 899.00, 'https://images.unsplash.com/photo-1678911820864-e2c567c655d7?w=400', 'Apple', 60),
-('iPhone 14', 'Reliable iPhone with great features at a more affordable price', 699.00, 'https://images.unsplash.com/photo-1678652197950-d4c0268e8f18?w=400', 'Apple', 80),
-
--- Samsung Products
-('Samsung Galaxy S24 Ultra', 'Ultimate flagship with S Pen, 200MP camera, AI features, and titanium frame', 1299.00, 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400', 'Samsung', 45),
-('Samsung Galaxy S24+', 'Premium Galaxy with large display and advanced features', 999.00, 'https://images.unsplash.com/photo-1583573607873-4f5826e7f1d7?w=400', 'Samsung', 65),
-('Samsung Galaxy S24', 'Compact flagship with powerful performance', 799.00, 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400', 'Samsung', 90),
-('Samsung Galaxy A54', 'Mid-range champion with great display, camera, and battery life', 449.00, 'https://images.unsplash.com/photo-1583573607873-4f5826e7f1d7?w=400', 'Samsung', 120),
-('Samsung Galaxy Z Fold 5', 'Foldable innovation with large inner display and multitasking capabilities', 1799.00, 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400', 'Samsung', 30),
-
--- Google Products
-('Google Pixel 8 Pro', 'Google flagship with advanced AI photography, Tensor G3 chip, and pure Android', 999.00, 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400', 'Google', 55),
-('Google Pixel 8', 'Compact Pixel with excellent camera and AI features', 699.00, 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400', 'Google', 70),
-('Google Pixel 7a', 'Budget-friendly Pixel with flagship camera quality', 499.00, 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400', 'Google', 85),
-
--- OnePlus Products
-('OnePlus 12', 'Flagship killer with Snapdragon 8 Gen 3, 100W fast charging, and Hasselblad camera', 799.00, 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400', 'OnePlus', 60),
-('OnePlus 11', 'Previous flagship with excellent value and performance', 649.00, 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400', 'OnePlus', 75),
-('OnePlus Nord 3', 'Mid-range OnePlus with flagship features at affordable price', 399.00, 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400', 'OnePlus', 95),
-
--- Xiaomi Products
-('Xiaomi 14 Pro', 'Flagship with Leica cameras, Snapdragon 8 Gen 3, and premium build', 999.00, 'https://images.unsplash.com/photo-1592286927505-b0c2fc1d9b65?w=400', 'Xiaomi', 50),
-('Xiaomi 13T Pro', 'Performance flagship with 144Hz display and fast charging', 699.00, 'https://images.unsplash.com/photo-1592286927505-b0c2fc1d9b65?w=400', 'Xiaomi', 70),
-('Xiaomi Redmi Note 13 Pro', 'Budget champion with 200MP camera and AMOLED display', 349.00, 'https://images.unsplash.com/photo-1592286927505-b0c2fc1d9b65?w=400', 'Xiaomi', 110),
-
--- Other Brands
-('Nothing Phone 2', 'Unique design with Glyph interface, clean software, and flagship specs', 599.00, 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400', 'Nothing', 65),
-('Motorola Edge 40 Pro', 'Flagship Motorola with clean Android and excellent display', 699.00, 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400', 'Motorola', 55),
-('Sony Xperia 1 V', 'Professional smartphone with 4K display and advanced camera controls', 1299.00, 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400', 'Sony', 35),
-('ASUS ROG Phone 7', 'Gaming powerhouse with 165Hz display and advanced cooling', 999.00, 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400', 'ASUS', 40),
-('Oppo Find X6 Pro', 'Flagship with Hasselblad camera and premium design', 899.00, 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400', 'Oppo', 50);
+CREATE TABLE price_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    old_price DECIMAL(10,2),
+    new_price DECIMAL(10,2),
+    changed_by INT,
+    change_reason VARCHAR(255),
+    changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (changed_by) REFERENCES admin_users(id) ON DELETE SET NULL,
+    INDEX idx_product (product_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
--- SAMPLE DATA - Categories
+-- TABLE: newsletters
+-- Description: Newsletter subscriptions
 -- ============================================
-INSERT INTO categories (name, description, image_url) VALUES
-('Apple', 'Premium smartphones from Apple with iOS', 'https://images.unsplash.com/photo-1611472173362-3f53dbd65d80?w=400'),
-('Samsung', 'Innovative Android smartphones from Samsung', 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400'),
-('Google', 'Pure Android experience with Pixel phones', 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400'),
-('OnePlus', 'Flagship killers with great value', 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400'),
-('Xiaomi', 'Feature-packed phones at competitive prices', 'https://images.unsplash.com/photo-1592286927505-b0c2fc1d9b65?w=400'),
-('Nothing', 'Unique design and clean software', 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400'),
-('Motorola', 'Classic brand with modern features', 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400'),
-('Sony', 'Professional-grade smartphones', 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400'),
-('ASUS', 'Gaming and performance focused', 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400'),
-('Oppo', 'Innovative camera technology', 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400');
+CREATE TABLE newsletters (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    is_active TINYINT(1) DEFAULT 1,
+    subscribed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    unsubscribed_at TIMESTAMP NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
--- SAMPLE DATA - Admin Users
+-- SEED DATA: Brands
 -- ============================================
--- Password for all admin users: admin123 (hashed with bcrypt)
-INSERT INTO admin_users (username, password, email, full_name, role) VALUES
-('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin@phonesstore.com', 'System Administrator', 'admin'),
-('judy', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'judy@phonesstore.com', 'Judy Manager', 'manager'),
-('habiba', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'habiba@phonesstore.com', 'Habiba Staff', 'staff');
+INSERT INTO brands (name, slug, description, country_origin, is_featured) VALUES
+('Apple', 'apple', 'Premium consumer electronics and software', 'United States', 1),
+('Samsung', 'samsung', 'Leading electronics and appliances manufacturer', 'South Korea', 1),
+('Sony', 'sony', 'Entertainment and electronics innovator', 'Japan', 1),
+('LG', 'lg', 'Home appliances and electronics', 'South Korea', 1),
+('Dell', 'dell', 'Computer technology and solutions', 'United States', 1),
+('HP', 'hp', 'Computing and printing solutions', 'United States', 1),
+('Lenovo', 'lenovo', 'Personal computers and technology', 'China', 1),
+('Canon', 'canon', 'Imaging and optical products', 'Japan', 0),
+('Nikon', 'nikon', 'Optical and imaging products', 'Japan', 0),
+('Bose', 'bose', 'Premium audio equipment', 'United States', 1),
+('JBL', 'jbl', 'Audio equipment and speakers', 'United States', 0),
+('Logitech', 'logitech', 'Computer peripherals and accessories', 'Switzerland', 0),
+('Microsoft', 'microsoft', 'Software and computing devices', 'United States', 1),
+('Google', 'google', 'Technology and consumer electronics', 'United States', 0),
+('Asus', 'asus', 'Computer hardware and electronics', 'Taiwan', 0);
 
 -- ============================================
--- SAMPLE DATA - Customer Users
+-- SEED DATA: Categories (Only 3 categories)
 -- ============================================
--- Password for all test users: password123 (hashed with bcrypt)
-INSERT INTO users (username, email, password, full_name, phone, address) VALUES
-('john_doe', 'john@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'John Doe', '+1234567890', '123 Main St, New York, NY 10001'),
-('jane_smith', 'jane@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Jane Smith', '+1234567891', '456 Oak Ave, Los Angeles, CA 90001'),
-('mike_wilson', 'mike@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Mike Wilson', '+1234567892', '789 Pine Rd, Chicago, IL 60601');
+INSERT INTO categories (id, name, slug, description, parent_id, display_order, is_active) VALUES
+(1, 'Computers & Laptops', 'computers-laptops', 'Computers, laptops and related products', NULL, 1, 1),
+(2, 'Mobile Devices', 'mobile-devices', 'Smartphones, tablets and mobile accessories', NULL, 2, 1),
+(3, 'Audio & Headphones', 'audio-headphones', 'Headphones, speakers and audio equipment', NULL, 3, 1);
 
 -- ============================================
--- SAMPLE DATA - Orders
+-- SEED DATA: Products - COMPUTERS & LAPTOPS
 -- ============================================
-INSERT INTO orders (user_id, order_number, total_amount, status, payment_method, shipping_address) VALUES
-(1, 'ORD-2024-001', 1998.00, 'delivered', 'Credit Card', '123 Main St, New York, NY 10001'),
-(1, 'ORD-2024-002', 799.00, 'shipped', 'PayPal', '123 Main St, New York, NY 10001'),
-(2, 'ORD-2024-003', 1299.00, 'processing', 'Credit Card', '456 Oak Ave, Los Angeles, CA 90001'),
-(3, 'ORD-2024-004', 1398.00, 'pending', 'Debit Card', '789 Pine Rd, Chicago, IL 60601');
+INSERT INTO products (sku, name, slug, brand_id, category_id, description, short_description, price, compare_at_price, stock_quantity, specs, warranty_period, is_featured, status) VALUES
+('DELL-XPS13-9340', 'Dell XPS 13 9340', 'dell-xps-13-9340', 5, 1, 'Ultra-portable 13-inch laptop with Intel Core Ultra processors and stunning InfinityEdge display. Perfect for professionals and students who need power on the go.', 'Premium 13-inch ultrabook with Intel Core Ultra', 1299.99, 1499.99, 35, JSON_OBJECT('processor','Intel Core Ultra 7','ram','16GB LPDDR5','storage','512GB NVMe SSD','display','13.4-inch FHD+','graphics','Intel Arc','battery','Up to 12 hours','weight','1.2 kg'), 24, 1, 'active'),
+
+('HP-SPECTRE-X360', 'HP Spectre x360 14', 'hp-spectre-x360-14', 6, 1, '2-in-1 convertible laptop with OLED display, Intel Evo platform, and premium design. Versatile device for work and entertainment.', 'Convertible 2-in-1 laptop with OLED display', 1499.99, NULL, 28, JSON_OBJECT('processor','Intel Core i7-1355U','ram','16GB DDR4','storage','1TB PCIe SSD','display','13.5-inch 3K2K OLED','graphics','Intel Iris Xe','battery','Up to 10 hours','weight','1.4 kg'), 24, 1, 'active'),
+
+('LENOVO-THINKPAD-X1', 'Lenovo ThinkPad X1 Carbon Gen 11', 'lenovo-thinkpad-x1-carbon-gen11', 7, 1, 'Business-class laptop with legendary ThinkPad durability, security features, and exceptional keyboard. Built for enterprise users.', 'Business ultrabook with military-grade durability', 1799.99, NULL, 22, JSON_OBJECT('processor','Intel Core i7-1365U','ram','32GB LPDDR5','storage','1TB SSD','display','14-inch 2.8K OLED','graphics','Intel Iris Xe','battery','Up to 14 hours','weight','1.12 kg'), 36, 0, 'active'),
+
+('APPLE-MBA-M3', 'Apple MacBook Air 15" M3', 'apple-macbook-air-15-m3', 1, 1, 'Incredibly thin and light laptop powered by Apple M3 chip. Features stunning Liquid Retina display and all-day battery life.', 'Thin and light 15-inch laptop with M3 chip', 1499.99, NULL, 45, JSON_OBJECT('processor','Apple M3 chip','ram','8GB unified memory','storage','512GB SSD','display','15.3-inch Liquid Retina','graphics','10-core GPU','battery','Up to 18 hours','weight','1.51 kg'), 12, 1, 'active'),
+
+('ASUS-ROG-ZEPHYRUS', 'ASUS ROG Zephyrus G14', 'asus-rog-zephyrus-g14', 15, 1, 'Compact gaming laptop with AMD Ryzen 9 processor and NVIDIA RTX 4060. Powerful performance in an ultraportable design.', 'Compact 14-inch gaming laptop', 1699.99, 1899.99, 18, JSON_OBJECT('processor','AMD Ryzen 9 7940HS','ram','16GB DDR5','storage','1TB NVMe SSD','display','14-inch QHD+ 165Hz','graphics','NVIDIA RTX 4060','battery','Up to 10 hours','weight','1.65 kg'), 24, 1, 'active');
 
 -- ============================================
--- SAMPLE DATA - Order Items
+-- SEED DATA: Products - SMARTPHONES
 -- ============================================
-INSERT INTO order_items (order_id, product_id, quantity, price, subtotal) VALUES
--- Order 1 items
-(1, 2, 1, 999.00, 999.00),
-(1, 3, 1, 999.00, 999.00),
--- Order 2 items
-(2, 3, 1, 799.00, 799.00),
--- Order 3 items
-(3, 6, 1, 1299.00, 1299.00),
--- Order 4 items
-(4, 9, 2, 449.00, 898.00),
-(4, 13, 1, 499.00, 499.00);
+INSERT INTO products (sku, name, slug, brand_id, category_id, description, short_description, price, stock_quantity, specs, warranty_period, is_featured, status) VALUES
+('APPLE-IP15PM-256', 'Apple iPhone 15 Pro Max 256GB', 'apple-iphone-15-pro-max', 1, 2, 'Flagship iPhone with titanium design, A17 Pro chip, and advanced camera system with 5x telephoto zoom. The ultimate iPhone experience.', 'Premium iPhone with titanium design', 1199.99, 65, JSON_OBJECT('chipset','A17 Pro','display','6.7-inch Super Retina XDR','ram','8GB','storage','256GB','camera','48MP main, 12MP ultra-wide, 12MP telephoto','battery','4422mAh','os','iOS 17'), 12, 1, 'active'),
+
+('SAMSUNG-S24U-512', 'Samsung Galaxy S24 Ultra 512GB', 'samsung-galaxy-s24-ultra', 2, 2, 'Ultimate Android flagship with 200MP camera, built-in S Pen, and AI-powered features. Premium smartphone experience.', 'Flagship Android with 200MP camera and S Pen', 1299.99, 48, JSON_OBJECT('chipset','Snapdragon 8 Gen 3','display','6.8-inch Dynamic AMOLED 2X','ram','12GB','storage','512GB','camera','200MP main, 50MP 5x telephoto, 12MP ultra-wide','battery','5000mAh','os','Android 14'), 24, 1, 'active'),
+
+('GOOGLE-P8P-256', 'Google Pixel 8 Pro 256GB', 'google-pixel-8-pro', 14, 2, 'Google flagship with advanced AI features, exceptional camera performance, and pure Android experience. Best for photography enthusiasts.', 'AI-powered flagship with exceptional camera', 999.99, 55, JSON_OBJECT('chipset','Google Tensor G3','display','6.7-inch LTPO OLED','ram','12GB','storage','256GB','camera','50MP main, 48MP telephoto, 48MP ultra-wide','battery','5050mAh','os','Android 14'), 24, 1, 'active'),
+
+('SAMSUNG-ZFOLD5', 'Samsung Galaxy Z Fold5', 'samsung-galaxy-z-fold5', 2, 2, 'Foldable smartphone with large 7.6-inch inner display. Multitasking powerhouse that unfolds into a tablet.', 'Foldable phone with 7.6-inch display', 1799.99, 25, JSON_OBJECT('chipset','Snapdragon 8 Gen 2','display','7.6-inch inner, 6.2-inch cover','ram','12GB','storage','512GB','camera','50MP main, 12MP ultra-wide, 10MP telephoto','battery','4400mAh','os','Android 13'), 24, 1, 'active');
 
 -- ============================================
--- Create Views for Easy Queries
+-- SEED DATA: Products - AUDIO & HEADPHONES
 -- ============================================
+INSERT INTO products (sku, name, slug, brand_id, category_id, description, short_description, price, stock_quantity, specs, warranty_period, is_featured, status) VALUES
+('SONY-WH1000XM5', 'Sony WH-1000XM5', 'sony-wh-1000xm5', 3, 3, 'Industry-leading noise canceling headphones with exceptional sound quality. 30-hour battery life and premium comfort.', 'Premium noise-canceling headphones', 399.99, 75, JSON_OBJECT('driver','30mm','frequency','4-40000Hz','battery','30 hours','connectivity','Bluetooth 5.2','anc','Yes','weight','250g'), 24, 1, 'active'),
 
--- View: Product inventory status
-CREATE VIEW product_inventory AS
-SELECT 
-    id,
-    name,
-    category,
-    price,
-    stock_quantity,
-    CASE 
-        WHEN stock_quantity = 0 THEN 'Out of Stock'
-        WHEN stock_quantity < 20 THEN 'Low Stock'
-        ELSE 'In Stock'
-    END as stock_status
-FROM products
-ORDER BY category, name;
+('BOSE-QC45', 'Bose QuietComfort 45', 'bose-quietcomfort-45', 10, 3, 'Legendary comfort meets advanced noise cancellation. Perfect balance of quietness and audio performance.', 'Comfortable noise-canceling headphones', 329.99, 60, JSON_OBJECT('driver','40mm','frequency','20-20000Hz','battery','24 hours','connectivity','Bluetooth 5.1','anc','Yes','weight','240g'), 24, 1, 'active'),
 
--- View: Order summary with customer details
-CREATE VIEW order_summary AS
-SELECT 
-    o.id,
-    o.order_number,
-    u.username,
-    u.email,
-    o.total_amount,
-    o.status,
-    o.order_date,
-    COUNT(oi.id) as total_items
-FROM orders o
-LEFT JOIN users u ON o.user_id = u.id
-LEFT JOIN order_items oi ON o.id = oi.order_id
-GROUP BY o.id, o.order_number, u.username, u.email, o.total_amount, o.status, o.order_date
-ORDER BY o.order_date DESC;
+('APPLE-AIRPODS-PRO2', 'Apple AirPods Pro 2nd Gen', 'apple-airpods-pro-2', 1, 3, 'Next-generation AirPods Pro with H2 chip, adaptive audio, and personalized spatial audio. Seamless Apple ecosystem integration.', 'Premium wireless earbuds with ANC', 249.99, 120, JSON_OBJECT('driver','Custom','battery','6 hours (30 with case)','connectivity','Bluetooth 5.3','anc','Yes','features','Adaptive Audio, Spatial Audio','water_resistance','IPX4'), 12, 1, 'active'),
+
+('JBL-FLIP6', 'JBL Flip 6 Portable Speaker', 'jbl-flip-6', 11, 6, 'Powerful portable Bluetooth speaker with deep bass and IP67 waterproof rating. Perfect for outdoor adventures.', 'Waterproof portable Bluetooth speaker', 129.99, 95, JSON_OBJECT('power','30W','battery','12 hours','connectivity','Bluetooth 5.1','water_resistance','IP67','weight','550g'), 12, 0, 'active'),
+
+('BOSE-HOME500', 'Bose Home Speaker 500', 'bose-home-speaker-500', 10, 6, 'Smart speaker with powerful stereo sound and Alexa built-in. Premium audio for your home.', 'Smart home speaker with Alexa', 299.99, 40, JSON_OBJECT('power','Not specified','connectivity','WiFi, Bluetooth','voice_assistant','Alexa, Google Assistant','features','Stereo sound, Touch controls'), 24, 0, 'active');
 
 -- ============================================
--- END OF SCHEMA
+-- SEED DATA: Products - CAMERAS
 -- ============================================
+INSERT INTO products (sku, name, slug, brand_id, category_id, description, short_description, price, stock_quantity, specs, warranty_period, is_featured, status) VALUES
+('SONY-A7IV-BODY', 'Sony Alpha 7 IV (Body)', 'sony-alpha-7-iv', 3, 4, 'Professional full-frame mirrorless camera with 33MP sensor, advanced autofocus, and 4K 60p video. Perfect for hybrid shooters.', 'Full-frame mirrorless camera', 2499.99, 22, JSON_OBJECT('sensor','33MP Full-frame CMOS','iso','100-51200','video','4K 60p','autofocus','693-point AF','screen','3-inch vari-angle','weight','658g'), 24, 1, 'active'),
 
--- Display success message
-SELECT 'Database created successfully!' as Status,
-       (SELECT COUNT(*) FROM products) as Products,
-       (SELECT COUNT(*) FROM users) as Users,
-       (SELECT COUNT(*) FROM admin_users) as Admins,
-       (SELECT COUNT(*) FROM orders) as Orders;
+('CANON-R6MKII', 'Canon EOS R6 Mark II', 'canon-eos-r6-mark-ii', 8, 4, 'High-performance full-frame mirrorless with 24MP sensor and superb autofocus. Excellent for sports and wildlife photography.', '24MP full-frame with advanced AF', 2499.99, 18, JSON_OBJECT('sensor','24MP Full-frame CMOS','iso','100-102400','video','4K 60p','autofocus','1053-point AF','screen','3.2-inch vari-angle','weight','670g'), 24, 1, 'active'),
+
+('NIKON-Z8', 'Nikon Z8', 'nikon-z8', 9, 4, 'Professional mirrorless camera with 45.7MP stacked sensor. Exceptional image quality and speed for professionals.', '45.7MP professional mirrorless', 3999.99, 12, JSON_OBJECT('sensor','45.7MP Stacked CMOS','iso','64-25600','video','8K 30p','autofocus','493-point AF','screen','3.2-inch tilting','weight','910g'), 24, 1, 'active');
+

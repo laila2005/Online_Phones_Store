@@ -75,7 +75,10 @@ foreach ($rawCart as $key => $value) {
 if (!empty($idsNeedingHydration)) {
     $ids = array_keys($idsNeedingHydration);
     $placeholders = implode(',', array_fill(0, count($ids), '?'));
-    $sql = "SELECT id, name, price, image_url FROM products WHERE id IN ($placeholders)";
+    $sql = "SELECT p.id, p.name, p.price, p.stock_quantity, b.name as brand_name 
+            FROM products p 
+            LEFT JOIN brands b ON p.brand_id = b.id 
+            WHERE p.id IN ($placeholders) AND p.status = 'active'";
     $stmt = $conn->prepare($sql);
 
     if ($stmt) {
@@ -99,8 +102,11 @@ if (!empty($idsNeedingHydration)) {
                 if (!isset($it['price'])) {
                     $it['price'] = (float)$p['price'];
                 }
-                if (!isset($it['image_url']) && isset($p['image_url'])) {
-                    $it['image_url'] = $p['image_url'];
+                if (!isset($it['brand_name']) && isset($p['brand_name'])) {
+                    $it['brand_name'] = $p['brand_name'];
+                }
+                if (!isset($it['stock_quantity'])) {
+                    $it['stock_quantity'] = (int)$p['stock_quantity'];
                 }
             }
         }
@@ -155,20 +161,26 @@ ob_start();
                     <tr>
                         <td>
                             <div class="d-flex align-items-center gap-3">
-                                <?php if (!empty($item['image_url'])): ?>
-                                    <img src="<?= htmlspecialchars($item['image_url']) ?>" alt="<?= htmlspecialchars($name) ?>" style="width: 60px; height: 60px; object-fit: cover;" class="rounded border">
-                                <?php else: ?>
-                                    <div class="bg-light border rounded" style="width: 60px; height: 60px;"></div>
-                                <?php endif; ?>
+                                <img src="https://via.placeholder.com/60x60?text=<?= urlencode($name) ?>" 
+                                     alt="<?= htmlspecialchars($name) ?>" 
+                                     style="width: 60px; height: 60px; object-fit: cover;" 
+                                     class="rounded border">
                                 <div>
+                                    <?php if (!empty($item['brand_name'])): ?>
+                                        <div class="text-muted small"><?= htmlspecialchars($item['brand_name']) ?></div>
+                                    <?php endif; ?>
                                     <div class="fw-semibold"><?= htmlspecialchars($name) ?></div>
-                                    <div class="text-muted small">ID: <?= $id ?></div>
+                                    <?php if (isset($item['stock_quantity']) && $item['stock_quantity'] <= 0): ?>
+                                        <div class="text-danger small">Out of Stock</div>
+                                    <?php elseif (isset($item['stock_quantity']) && $item['stock_quantity'] < 10): ?>
+                                        <div class="text-warning small">Only <?= $item['stock_quantity'] ?> left</div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </td>
-                        <td class="text-end">$<?= number_format($price, 2) ?></td>
+                        <td class="text-end">EGP <?= number_format($price, 2) ?></td>
                         <td class="text-center"><?= $qty ?></td>
-                        <td class="text-end">$<?= number_format($subtotal, 2) ?></td>
+                        <td class="text-end">EGP <?= number_format($subtotal, 2) ?></td>
                         <td class="text-end">
                             <form method="POST" class="d-inline">
                                 <input type="hidden" name="remove_id" value="<?= $id ?>">
@@ -181,7 +193,7 @@ ob_start();
             <tfoot>
                 <tr>
                     <th colspan="3" class="text-end">Total</th>
-                    <th class="text-end">$<?= number_format($grandTotal, 2) ?></th>
+                    <th class="text-end">EGP <?= number_format($grandTotal, 2) ?></th>
                     <th></th>
                 </tr>
             </tfoot>

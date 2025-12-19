@@ -7,7 +7,7 @@ if (!defined("SECURE_ACCESS")) {
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "ecommerce_db";
+$dbname = "electronics_store";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);

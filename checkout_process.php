@@ -75,7 +75,7 @@ foreach ($cart as $key => $value) {
         $item['quantity'] = 1;
     }
 
-    if (!isset($item['price'])) {
+    if (!isset($item['price']) || !isset($item['name'])) {
         $idsNeedingHydration[$item['id']] = true;
     }
 

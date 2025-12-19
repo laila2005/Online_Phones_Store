@@ -53,7 +53,10 @@ if ($quantity <= 0) {
     $quantity = 1;
 }
 
-$stmt = $conn->prepare('SELECT id, name, price, image_url FROM products WHERE id = ?');
+$stmt = $conn->prepare('SELECT p.id, p.name, p.price, p.stock_quantity, b.name as brand_name 
+                         FROM products p 
+                         LEFT JOIN brands b ON p.brand_id = b.id 
+                         WHERE p.id = ? AND p.status = "active"');
 if (!$stmt) {
     $fail(500, 'Server error (prepare failed): ' . $conn->error);
 }
@@ -65,18 +68,25 @@ if (!$stmt->execute()) {
     $fail(500, 'Server error (execute failed): ' . $conn->error);
 }
 
-$stmt->bind_result($id, $name, $price, $imageUrl);
+$stmt->bind_result($id, $name, $price, $stockQuantity, $brandName);
 if (!$stmt->fetch()) {
     $stmt->close();
     $conn->close();
     $fail(404, 'Product not found');
 }
 
+if ($stockQuantity <= 0) {
+    $stmt->close();
+    $conn->close();
+    $fail(400, 'Product is out of stock');
+}
+
 $product = [
     'id' => $id,
     'name' => $name,
     'price' => $price,
-    'image_url' => $imageUrl,
+    'stock_quantity' => $stockQuantity,
+    'brand_name' => $brandName,
 ];
 
 $stmt->close();
