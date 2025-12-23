@@ -132,23 +132,25 @@ ob_start();
                         <span class="badge bg-danger position-absolute top-0 end-0 m-2">Sale</span>
                     <?php endif; ?>
                     
-                    <button class="btn btn-link position-absolute top-0 end-0 mt-5 me-2 wishlist-btn" 
-                            data-product-id="<?= $row["id"] ?>"
-                            style="z-index: 10; padding: 0.25rem 0.5rem;">
-                        <i class="bi bi-heart" style="font-size: 1.5rem; color: #dc3545;"></i>
-                    </button>
-                    
                     <img class="card-img-top" 
                          src="<?= !empty($row['image_url']) ? htmlspecialchars($row['image_url']) : 'https://via.placeholder.com/300x200?text=' . urlencode($row['name']) ?>" 
                          alt="<?= !empty($row['alt_text']) ? htmlspecialchars($row['alt_text']) : htmlspecialchars($row['name']) ?>"
                          style="height: 200px; object-fit: cover;">
                     
                     <div class="card-body d-flex flex-column">
-                        <?php if (!empty($row["brand_name"])): ?>
-                            <small class="text-muted mb-1"><?= htmlspecialchars($row["brand_name"]) ?></small>
-                        <?php endif; ?>
-                        
-                        <h5 class="card-title"><?= htmlspecialchars($row["name"]) ?></h5>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="flex-grow-1">
+                                <?php if (!empty($row["brand_name"])): ?>
+                                    <small class="text-muted mb-1 d-block"><?= htmlspecialchars($row["brand_name"]) ?></small>
+                                <?php endif; ?>
+                                <h5 class="card-title mb-0"><?= htmlspecialchars($row["name"]) ?></h5>
+                            </div>
+                            <button class="btn btn-link p-0 wishlist-btn" 
+                                    data-product-id="<?= $row["id"] ?>"
+                                    style="margin-left: 0.5rem; text-decoration: none; box-shadow: none !important; outline: none !important;">
+                                <i class="bi bi-heart" style="font-size: 1.5rem; color: #dc3545;"></i>
+                            </button>
+                        </div>
                         
                         <?php if (!empty($row["category_name"])): ?>
                             <span class="badge bg-info mb-2"><?= htmlspecialchars($row["category_name"]) ?></span>

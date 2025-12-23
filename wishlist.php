@@ -13,7 +13,7 @@ $user_id = get_current_user_id();
 
 // Fetch wishlist items with product details
 $stmt = $conn->prepare("
-    SELECT w.id as wishlist_id, p.id, p.name, p.slug, p.short_description, p.price, 
+    SELECT w.id as wishlist_id, p.id as product_id, p.name, p.slug, p.short_description, p.price, 
            p.compare_at_price, p.stock_quantity, b.name as brand_name, c.name as category_name,
            pi.image_url, pi.alt_text
     FROM wishlists w
@@ -22,8 +22,13 @@ $stmt = $conn->prepare("
     LEFT JOIN categories c ON p.category_id = c.id
     LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = 1
     WHERE w.user_id = ?
-    ORDER BY w.created_at DESC
+    ORDER BY w.id DESC
 ");
+
+if (!$stmt) {
+    die("SQL Error: " . $conn->error);
+}
+
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -70,7 +75,7 @@ ob_start();
                                 <div class="card h-100 shadow-sm position-relative">
                                     <button class="btn btn-link position-absolute top-0 end-0 m-2 remove-from-wishlist" 
                                             data-wishlist-id="<?= $item['wishlist_id'] ?>"
-                                            data-product-id="<?= $item['id'] ?>"
+                                            data-product-id="<?= $item['product_id'] ?>"
                                             style="z-index: 10; padding: 0.25rem 0.5rem;">
                                         <i class="bi bi-x-circle-fill" style="font-size: 1.5rem; color: #dc3545;"></i>
                                     </button>
@@ -112,13 +117,13 @@ ob_start();
                                     </div>
                                     
                                     <div class="card-footer bg-transparent border-top-0">
-                                        <a href="product_detail.php?id=<?= $item["id"] ?>" 
+                                        <a href="product_detail.php?id=<?= $item["product_id"] ?>" 
                                            class="btn btn-primary btn-sm w-100 mb-2">
                                             <i class="bi bi-eye me-1"></i>View Details
                                         </a>
                                         <?php if ($item["stock_quantity"] > 0): ?>
                                             <button class="btn btn-success btn-sm w-100 add-to-cart" 
-                                                    data-id="<?= $item["id"] ?>">
+                                                    data-id="<?= $item["product_id"] ?>">
                                                 <i class="bi bi-cart-plus me-1"></i>Add to Cart
                                             </button>
                                         <?php else: ?>
