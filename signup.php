@@ -66,8 +66,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     if ($stmt->execute()) {
                         $success = true;
-                        $_SESSION['signup_success'] = "Account created successfully! Please login.";
-                        header("Location: login.php");
+                        $newUserId = $stmt->insert_id;
+                        $stmt->close();
+                        
+                        // Auto-login the user after signup
+                        $_SESSION['user_id'] = $newUserId;
+                        $_SESSION['username'] = $username;
+                        $_SESSION['user_email'] = $email;
+                        $_SESSION['user_full_name'] = $full_name;
+                        $_SESSION['user_logged_in'] = true;
+                        
+                        // Check if there's a pending cart item to add
+                        if (isset($_SESSION['pending_cart_product'])) {
+                            $productId = (int)$_SESSION['pending_cart_product'];
+                            $quantity = isset($_SESSION['pending_cart_quantity']) ? (int)$_SESSION['pending_cart_quantity'] : 1;
+                            
+                            // Fetch product details
+                            $stmt2 = $conn->prepare('SELECT p.id, p.name, p.price, p.stock_quantity, b.name as brand_name,
+                                                     pi.image_url, pi.alt_text
+                                                     FROM products p 
+                                                     LEFT JOIN brands b ON p.brand_id = b.id 
+                                                     LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = 1
+                                                     WHERE p.id = ? AND p.status = "active"');
+                            if ($stmt2) {
+                                $stmt2->bind_param('i', $productId);
+                                $stmt2->execute();
+                                $stmt2->bind_result($id, $name, $price, $stockQuantity, $brandName, $imageUrl, $altText);
+                                
+                                if ($stmt2->fetch() && $stockQuantity > 0) {
+                                    $stmt2->close();
+                                    
+                                    // Add to cart
+                                    if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
+                                        $_SESSION['cart'] = [];
+                                    }
+                                    
+                                    $_SESSION['cart'][] = [
+                                        'id' => $id,
+                                        'name' => $name,
+                                        'price' => (float)$price,
+                                        'image_url' => $imageUrl ?? '',
+                                        'alt_text' => $altText ?? '',
+                                        'quantity' => $quantity,
+                                    ];
+                                } else {
+                                    $stmt2->close();
+                                }
+                            }
+                            
+                            // Clear pending cart items
+                            unset($_SESSION['pending_cart_product']);
+                            unset($_SESSION['pending_cart_quantity']);
+                        }
+                        
+                        $_SESSION['signup_success'] = "Account created successfully! Welcome!";
+                        header("Location: index.php");
                         exit();
                     } else {
                         $errors[] = "Registration failed: " . $stmt->error;

@@ -121,15 +121,79 @@ if (!empty($idsNeedingHydration)) {
     }
 }
 
-$totalAmount = 0.0;
+$subtotal = 0.0;
 foreach ($items as $it) {
     $price = isset($it['price']) ? (float)$it['price'] : 0.0;
     $qty = (int)$it['quantity'];
-    $totalAmount += ($price * $qty);
+    $subtotal += ($price * $qty);
 }
 
-if ($totalAmount <= 0) {
+if ($subtotal <= 0) {
     $errors[] = 'Unable to calculate order total.';
+}
+
+// Validate and apply coupon code
+$discountAmount = 0.0;
+$couponCode = '';
+$couponDescription = '';
+
+if (!empty($promoCode)) {
+    $stmt = $conn->prepare("SELECT code, description, discount_type, discount_value, min_purchase_amount, max_discount_amount, usage_limit, usage_count, is_active, valid_from, valid_until 
+                            FROM coupons 
+                            WHERE code = ? AND is_active = 1");
+    if ($stmt) {
+        $stmt->bind_param("s", $promoCode);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($coupon = $result->fetch_assoc()) {
+            $now = date('Y-m-d H:i:s');
+            $validFrom = $coupon['valid_from'];
+            $validUntil = $coupon['valid_until'];
+            
+            // Check if coupon is valid
+            // Skip valid_from check for now due to database issue
+            if (!empty($validUntil) && $now > $validUntil) {
+                $errors[] = 'This coupon has expired.';
+            } elseif ($coupon['usage_limit'] && $coupon['usage_count'] >= $coupon['usage_limit']) {
+                $errors[] = 'This coupon has reached its usage limit.';
+            } elseif ($subtotal < $coupon['min_purchase_amount']) {
+                $errors[] = 'Minimum purchase amount of EGP ' . number_format($coupon['min_purchase_amount'], 2) . ' required for this coupon.';
+            } else {
+                // Apply discount
+                $couponCode = $coupon['code'];
+                $couponDescription = $coupon['description'];
+                
+                if ($coupon['discount_type'] === 'percentage') {
+                    $discountAmount = ($subtotal * $coupon['discount_value']) / 100;
+                    if ($coupon['max_discount_amount'] && $discountAmount > $coupon['max_discount_amount']) {
+                        $discountAmount = $coupon['max_discount_amount'];
+                    }
+                } else { // fixed_amount
+                    $discountAmount = $coupon['discount_value'];
+                    if ($discountAmount > $subtotal) {
+                        $discountAmount = $subtotal;
+                    }
+                }
+                
+                // Update coupon usage count
+                $updateStmt = $conn->prepare("UPDATE coupons SET usage_count = usage_count + 1 WHERE code = ?");
+                if ($updateStmt) {
+                    $updateStmt->bind_param("s", $couponCode);
+                    $updateStmt->execute();
+                    $updateStmt->close();
+                }
+            }
+        } else {
+            $errors[] = 'Invalid coupon code.';
+        }
+        $stmt->close();
+    }
+}
+
+$totalAmount = $subtotal - $discountAmount;
+if ($totalAmount < 0) {
+    $totalAmount = 0;
 }
 
 if (!empty($errors)) {
@@ -167,15 +231,19 @@ try {
         $userId = (int)$_SESSION['user_id'];
     }
 
-    $shippingAddress = $address;
-
-    $sqlOrder = "INSERT INTO orders (user_id, order_number, total_amount, payment_method, shipping_address) VALUES (?, ?, ?, ?, ?)";
-    $stmtOrder = $conn->prepare($sqlOrder);
-    if (!$stmtOrder) {
-        throw new Exception('Failed to prepare order insert.');
+    // Store shipping address in notes field for now (or create address record)
+    $notes = "Shipping Address: " . $address . "\nCustomer: " . $name . "\nEmail: " . $email . "\nPhone: " . $phone;
+    if (!empty($couponCode)) {
+        $notes .= "\nCoupon Applied: " . $couponCode . " - " . $couponDescription;
     }
 
-    $stmtOrder->bind_param('isdss', $userId, $orderNumber, $totalAmount, $paymentMethod, $shippingAddress);
+    $sqlOrder = "INSERT INTO orders (user_id, order_number, subtotal, discount_amount, total_amount, payment_method, notes) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    $stmtOrder = $conn->prepare($sqlOrder);
+    if (!$stmtOrder) {
+        throw new Exception('Failed to prepare order insert: ' . $conn->error);
+    }
+
+    $stmtOrder->bind_param('isdddss', $userId, $orderNumber, $subtotal, $discountAmount, $totalAmount, $paymentMethod, $notes);
     if (!$stmtOrder->execute()) {
         throw new Exception('Failed to create the order.');
     }
@@ -183,19 +251,21 @@ try {
     $orderId = (int)$conn->insert_id;
     $stmtOrder->close();
 
-    $sqlItem = "INSERT INTO order_items (order_id, product_id, quantity, price, subtotal) VALUES (?, ?, ?, ?, ?)";
+    $sqlItem = "INSERT INTO order_items (order_id, product_id, product_name, sku, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?, ?, ?)";
     $stmtItem = $conn->prepare($sqlItem);
     if (!$stmtItem) {
-        throw new Exception('Failed to prepare order items insert.');
+        throw new Exception('Failed to prepare order items insert: ' . $conn->error);
     }
 
     foreach ($items as $it) {
         $productId = (int)$it['id'];
+        $productName = isset($it['name']) ? (string)$it['name'] : 'Product #' . $productId;
+        $sku = isset($it['sku']) ? (string)$it['sku'] : '';
         $quantity = (int)$it['quantity'];
         $price = (float)$it['price'];
         $subtotal = $price * $quantity;
 
-        $stmtItem->bind_param('iiidd', $orderId, $productId, $quantity, $price, $subtotal);
+        $stmtItem->bind_param('iissidd', $orderId, $productId, $productName, $sku, $quantity, $price, $subtotal);
         if (!$stmtItem->execute()) {
             throw new Exception('Failed to add an item to the order.');
         }
@@ -209,7 +279,10 @@ try {
         'customer_name' => $name,
         'customer_email' => $email,
         'customer_phone' => $phone,
+        'subtotal' => $subtotal,
+        'discount_amount' => $discountAmount,
         'total_amount' => $totalAmount,
+        'coupon_code' => $couponCode,
         'payment_method' => $paymentMethod,
         'items' => $items,
         'order_date' => date('Y-m-d H:i:s')

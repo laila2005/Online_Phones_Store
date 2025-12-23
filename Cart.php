@@ -75,9 +75,11 @@ foreach ($rawCart as $key => $value) {
 if (!empty($idsNeedingHydration)) {
     $ids = array_keys($idsNeedingHydration);
     $placeholders = implode(',', array_fill(0, count($ids), '?'));
-    $sql = "SELECT p.id, p.name, p.price, p.stock_quantity, b.name as brand_name 
+    $sql = "SELECT p.id, p.name, p.price, p.stock_quantity, b.name as brand_name,
+                   pi.image_url, pi.alt_text
             FROM products p 
             LEFT JOIN brands b ON p.brand_id = b.id 
+            LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = 1
             WHERE p.id IN ($placeholders) AND p.status = 'active'";
     $stmt = $conn->prepare($sql);
 
@@ -107,6 +109,12 @@ if (!empty($idsNeedingHydration)) {
                 }
                 if (!isset($it['stock_quantity'])) {
                     $it['stock_quantity'] = (int)$p['stock_quantity'];
+                }
+                if (!isset($it['image_url']) && isset($p['image_url'])) {
+                    $it['image_url'] = $p['image_url'];
+                }
+                if (!isset($it['alt_text']) && isset($p['alt_text'])) {
+                    $it['alt_text'] = $p['alt_text'];
                 }
             }
         }
@@ -161,8 +169,8 @@ ob_start();
                     <tr>
                         <td>
                             <div class="d-flex align-items-center gap-3">
-                                <img src="https://via.placeholder.com/60x60?text=<?= urlencode($name) ?>" 
-                                     alt="<?= htmlspecialchars($name) ?>" 
+                                <img src="<?= !empty($item['image_url']) ? htmlspecialchars($item['image_url']) : 'https://via.placeholder.com/60x60?text=' . urlencode($name) ?>" 
+                                     alt="<?= !empty($item['alt_text']) ? htmlspecialchars($item['alt_text']) : htmlspecialchars($name) ?>" 
                                      style="width: 60px; height: 60px; object-fit: cover;" 
                                      class="rounded border">
                                 <div>

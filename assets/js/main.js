@@ -26,6 +26,12 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(res => res.json())
             .then(data => {
+                // Check if redirect is needed (user not logged in)
+                if (data && data.redirect) {
+                    window.location.href = data.redirect;
+                    return;
+                }
+
                 if (!data || !data.success) {
                     throw new Error((data && data.message) ? data.message : 'Failed to add to cart');
                 }

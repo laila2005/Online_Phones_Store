@@ -9,6 +9,25 @@ include 'includes/db_connect.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    // Store the product ID in session for later
+    if (isset($_REQUEST['product_id'])) {
+        $_SESSION['pending_cart_product'] = (int)$_REQUEST['product_id'];
+        $_SESSION['pending_cart_quantity'] = isset($_REQUEST['quantity']) ? (int)$_REQUEST['quantity'] : 1;
+    }
+    
+    if (ob_get_length()) {
+        ob_clean();
+    }
+    echo json_encode([
+        'success' => false,
+        'redirect' => 'login.php',
+        'message' => 'Please login to add items to cart'
+    ]);
+    exit;
+}
+
 mysqli_report(MYSQLI_REPORT_OFF);
 
 $fail = function (int $status, string $message) {
@@ -53,9 +72,11 @@ if ($quantity <= 0) {
     $quantity = 1;
 }
 
-$stmt = $conn->prepare('SELECT p.id, p.name, p.price, p.stock_quantity, b.name as brand_name 
+$stmt = $conn->prepare('SELECT p.id, p.name, p.price, p.stock_quantity, b.name as brand_name,
+                         pi.image_url, pi.alt_text
                          FROM products p 
                          LEFT JOIN brands b ON p.brand_id = b.id 
+                         LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = 1
                          WHERE p.id = ? AND p.status = "active"');
 if (!$stmt) {
     $fail(500, 'Server error (prepare failed): ' . $conn->error);
@@ -68,7 +89,7 @@ if (!$stmt->execute()) {
     $fail(500, 'Server error (execute failed): ' . $conn->error);
 }
 
-$stmt->bind_result($id, $name, $price, $stockQuantity, $brandName);
+$stmt->bind_result($id, $name, $price, $stockQuantity, $brandName, $imageUrl, $altText);
 if (!$stmt->fetch()) {
     $stmt->close();
     $conn->close();
@@ -87,6 +108,8 @@ $product = [
     'price' => $price,
     'stock_quantity' => $stockQuantity,
     'brand_name' => $brandName,
+    'image_url' => $imageUrl,
+    'alt_text' => $altText,
 ];
 
 $stmt->close();
@@ -112,7 +135,8 @@ if (!$found) {
         'id' => (int)$product['id'],
         'name' => (string)$product['name'],
         'price' => (float)$product['price'],
-        'image_url' => (string)$product['image_url'],
+        'image_url' => isset($product['image_url']) ? (string)$product['image_url'] : '',
+        'alt_text' => isset($product['alt_text']) ? (string)$product['alt_text'] : '',
         'quantity' => $quantity,
     ];
 }

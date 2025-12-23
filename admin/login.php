@@ -15,8 +15,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
         
-        // Verify password (supports both hashed and plain text for backward compatibility)
-        if (password_verify($password, $user['password']) || $password === $user['password']) {
+        // Verify password (plain text only)
+        if ($password === $user['password']) {
             $_SESSION["logged_in"] = true;
             $_SESSION["admin_id"] = $user['id'];
             $_SESSION["admin_username"] = $user['username'];

@@ -11,12 +11,30 @@ require_login('checkout.php');
 $pageTitle = "Checkout - Online Phones Store";
 
 $user_id = get_current_user_id();
-$stmt = $conn->prepare("SELECT full_name, email, phone, address FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT full_name, email, phone FROM users WHERE id = ?");
+if (!$stmt) {
+    die("Database error: " . $conn->error);
+}
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $user_data = $result->fetch_assoc();
 $stmt->close();
+
+// Fetch default address if exists
+$address = '';
+$stmt2 = $conn->prepare("SELECT address_line1, address_line2, city, state, postal_code FROM user_addresses WHERE user_id = ? AND is_default = 1 LIMIT 1");
+if ($stmt2) {
+    $stmt2->bind_param("i", $user_id);
+    $stmt2->execute();
+    $result2 = $stmt2->get_result();
+    if ($addr_data = $result2->fetch_assoc()) {
+        $address = trim($addr_data['address_line1'] . ' ' . $addr_data['address_line2']) . ', ' . 
+                   $addr_data['city'] . ', ' . $addr_data['state'] . ' ' . $addr_data['postal_code'];
+    }
+    $stmt2->close();
+}
+$user_data['address'] = $address;
 
 ob_start();
 ?>

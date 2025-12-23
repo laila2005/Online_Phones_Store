@@ -74,10 +74,12 @@ ob_start();
     <?php
     // Build SQL query based on filters
     $sql = "SELECT p.id, p.name, p.slug, p.short_description, p.price, p.compare_at_price, 
-                   p.stock_quantity, p.is_featured, b.name as brand_name, c.name as category_name
+                   p.stock_quantity, p.is_featured, b.name as brand_name, c.name as category_name,
+                   pi.image_url, pi.alt_text
             FROM products p
             LEFT JOIN brands b ON p.brand_id = b.id
             LEFT JOIN categories c ON p.category_id = c.id
+            LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = 1
             WHERE p.status = 'active'";
     
     $params = [];
@@ -119,8 +121,8 @@ ob_start();
                     <?php endif; ?>
                     
                     <img class="card-img-top" 
-                         src="https://via.placeholder.com/300x200?text=<?= urlencode($row['name']) ?>" 
-                         alt="<?= htmlspecialchars($row["name"]) ?>"
+                         src="<?= !empty($row['image_url']) ? htmlspecialchars($row['image_url']) : 'https://via.placeholder.com/300x200?text=' . urlencode($row['name']) ?>" 
+                         alt="<?= !empty($row['alt_text']) ? htmlspecialchars($row['alt_text']) : htmlspecialchars($row['name']) ?>"
                          style="height: 200px; object-fit: cover;">
                     
                     <div class="card-body d-flex flex-column">

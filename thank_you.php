@@ -14,7 +14,10 @@ if (!$order) {
 $customerName = htmlspecialchars($order['customer_name']);
 $orderNumber = htmlspecialchars($order['order_number']);
 $orderId = (int)$order['order_id'];
-$totalAmount = number_format((float)$order['total_amount'], 2);
+$subtotal = isset($order['subtotal']) ? (float)$order['subtotal'] : (float)$order['total_amount'];
+$discountAmount = isset($order['discount_amount']) ? (float)$order['discount_amount'] : 0;
+$totalAmount = (float)$order['total_amount'];
+$couponCode = isset($order['coupon_code']) ? $order['coupon_code'] : '';
 $paymentMethod = $order['payment_method'] === 'cash_on_delivery' ? 'Cash on Delivery' : 'Card Payment';
 $items = $order['items'];
 
@@ -94,15 +97,28 @@ ob_start();
                                 <td><span class="badge bg-secondary">#<?= $itemId ?></span></td>
                                 <td><?= $itemName ?></td>
                                 <td class="text-center"><?= $itemQty ?></td>
-                                <td class="text-end">$<?= $itemPrice ?></td>
-                                <td class="text-end fw-bold">$<?= $itemSubtotal ?></td>
+                                <td class="text-end">EGP <?= $itemPrice ?></td>
+                                <td class="text-end fw-bold">EGP <?= $itemSubtotal ?></td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
                         <tfoot class="table-light">
                             <tr>
+                                <td colspan="4" class="text-end">Subtotal:</td>
+                                <td class="text-end">EGP <?= number_format($subtotal, 2) ?></td>
+                            </tr>
+                            <?php if ($discountAmount > 0 && !empty($couponCode)): ?>
+                            <tr class="table-success">
+                                <td colspan="4" class="text-end">
+                                    <span class="badge bg-success me-2"><?= htmlspecialchars($couponCode) ?></span>
+                                    Discount (<?= number_format(($discountAmount / $subtotal) * 100, 1) ?>%):
+                                </td>
+                                <td class="text-end text-success">-EGP <?= number_format($discountAmount, 2) ?></td>
+                            </tr>
+                            <?php endif; ?>
+                            <tr>
                                 <td colspan="4" class="text-end fw-bold">Total Amount:</td>
-                                <td class="text-end fw-bold text-success fs-5">$<?= $totalAmount ?></td>
+                                <td class="text-end fw-bold text-success fs-5">EGP <?= number_format($totalAmount, 2) ?></td>
                             </tr>
                             <tr>
                                 <td colspan="4" class="text-end">Payment Method:</td>

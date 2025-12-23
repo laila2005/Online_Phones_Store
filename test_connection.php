@@ -24,13 +24,15 @@ echo "<hr><h2>Test 2: Connection with Default Settings</h2>";
 $servername = "localhost";
 $username = "root";
 $password = ""; // Default XAMPP has no password
+$port = 3307;
 
 echo "Attempting to connect with:<br>";
 echo "- Host: <strong>$servername</strong><br>";
 echo "- Username: <strong>$username</strong><br>";
-echo "- Password: <strong>" . (empty($password) ? "(empty)" : "***") . "</strong><br><br>";
+echo "- Password: <strong>" . (empty($password) ? "(empty)" : "***") . "</strong><br>";
+echo "- Port: <strong>$port</strong><br><br>";
 
-$conn = @new mysqli($servername, $username, $password);
+$conn = @new mysqli($servername, $username, $password, "", $port);
 
 if ($conn->connect_error) {
     echo "❌ <span style='color:red;'>Connection FAILED</span><br>";
@@ -41,7 +43,7 @@ if ($conn->connect_error) {
     echo "<ul>";
     echo "<li>Make sure MySQL is running in XAMPP Control Panel</li>";
     echo "<li>If you set a password, update the \$password variable in this file</li>";
-    echo "<li>Check if port 3306 is available</li>";
+    echo "<li>Check if port 3307 is available</li>";
     echo "<li>See TROUBLESHOOTING_MYSQL.md for detailed fixes</li>";
     echo "</ul>";
     exit;
@@ -51,7 +53,7 @@ if ($conn->connect_error) {
 
 // Test 3: Check if database exists
 echo "<hr><h2>Test 3: Check Database</h2>";
-$dbname = "ecommerce_db";
+$dbname = "electronics_store";
 $result = $conn->query("SHOW DATABASES LIKE '$dbname'");
 
 if ($result->num_rows > 0) {
@@ -118,7 +120,7 @@ echo "<?php\n";
 echo "\$servername = \"localhost\";\n";
 echo "\$username = \"root\";\n";
 echo "\$password = \"\";  // Empty for default XAMPP\n";
-echo "\$dbname = \"ecommerce_db\";\n";
+echo "\$dbname = \"electronics_store\";\n";
 echo "</pre>";
 
 // Final summary
