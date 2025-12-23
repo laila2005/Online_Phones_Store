@@ -139,9 +139,8 @@ ob_start();
             </div>
         </div>
 
-        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center mb-4">
+        <div class="d-flex justify-content-center mb-4">
             <a href="index.php" class="btn btn-primary">Continue Shopping</a>
-            <a href="index.php" class="btn btn-outline-secondary">View More Products</a>
         </div>
 
         <div class="text-center text-muted">

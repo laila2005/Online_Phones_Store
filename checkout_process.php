@@ -293,6 +293,20 @@ try {
         if (!$stmtItem->execute()) {
             throw new Exception('Failed to add an item to the order.');
         }
+        
+        // Reduce product stock quantity
+        $stmtStock = $conn->prepare("UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ? AND stock_quantity >= ?");
+        if (!$stmtStock) {
+            throw new Exception('Failed to prepare stock update: ' . $conn->error);
+        }
+        $stmtStock->bind_param('iii', $quantity, $productId, $quantity);
+        if (!$stmtStock->execute()) {
+            throw new Exception('Failed to update stock for product #' . $productId);
+        }
+        if ($stmtStock->affected_rows === 0) {
+            throw new Exception('Insufficient stock for product #' . $productId);
+        }
+        $stmtStock->close();
     }
 
     $stmtItem->close();

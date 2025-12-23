@@ -99,12 +99,12 @@ ob_start();
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Account Menu</h5>
-                <ul class="list-unstyled">
-                    <li class="mb-2"><a href="profile.php" class="text-decoration-none fw-bold" style="color: white; background-color: #764ba2; padding: 0.5rem 1rem; border-radius: 0.5rem; display: block;">My Profile</a></li>
-                    <li class="mb-2"><a href="orders.php" class="text-decoration-none" style="color: #764ba2;">My Orders</a></li>
-                    <li class="mb-2"><a href="wishlist.php" class="text-decoration-none" style="color: #764ba2;"><i class="bi bi-heart me-1"></i>My Wishlist</a></li>
-                    <li class="mb-2"><a href="Cart.php" class="text-decoration-none" style="color: #764ba2;">My Cart</a></li>
-                    <li class="mb-2"><a href="logout.php" class="text-decoration-none text-danger">Logout</a></li>
+                <ul class="list-unstyled profile-menu">
+                    <li class="mb-2"><a href="profile.php" class="profile-menu-link active"><i class="bi bi-person-circle me-2"></i>My Profile</a></li>
+                    <li class="mb-2"><a href="orders.php" class="profile-menu-link"><i class="bi bi-box-seam me-2"></i>My Orders</a></li>
+                    <li class="mb-2"><a href="wishlist.php" class="profile-menu-link"><i class="bi bi-heart me-2"></i>My Wishlist</a></li>
+                    <li class="mb-2"><a href="Cart.php" class="profile-menu-link"><i class="bi bi-cart3 me-2"></i>My Cart</a></li>
+                    <li class="mb-2"><a href="logout.php" class="profile-menu-link logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                 </ul>
             </div>
         </div>
@@ -113,7 +113,26 @@ ob_start();
     <div class="col-md-9 profile-content">
         <div class="card">
             <div class="card-body">
-                <h2 class="card-title mb-4">My Profile</h2>
+                <!-- Profile Header with Avatar -->
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <?php
+                        $initials = '';
+                        $name_parts = explode(' ', $user_data['full_name'] ?? $user_data['username']);
+                        foreach ($name_parts as $part) {
+                            if (!empty($part)) {
+                                $initials .= strtoupper(substr($part, 0, 1));
+                            }
+                        }
+                        $initials = substr($initials, 0, 2);
+                        ?>
+                        <div class="avatar-circle"><?= $initials ?></div>
+                    </div>
+                    <div class="profile-greeting">
+                        <h2 class="greeting-text">Hello, <?= htmlspecialchars(explode(' ', $user_data['full_name'] ?? $user_data['username'])[0]) ?>!</h2>
+                        <p class="greeting-subtext">Manage your account information and settings</p>
+                    </div>
+                </div>
 
                 <?php if ($success): ?>
                     <div class="alert alert-success">
@@ -132,60 +151,91 @@ ob_start();
                 <?php endif; ?>
 
                 <form method="POST" action="profile.php">
-                    <h5 class="mb-3">Account Information</h5>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Username</label>
-                            <input type="text" class="form-control" value="<?= htmlspecialchars($user_data['username']) ?>" disabled>
-                            <small class="form-text text-muted">Username cannot be changed</small>
+                    <!-- Account Information Section -->
+                    <div class="profile-section">
+                        <h5 class="section-title"><i class="bi bi-person-badge me-2"></i>Account Information</h5>
+                        
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label class="form-label-modern">Username</label>
+                                    <div class="input-with-icon">
+                                        <i class="bi bi-lock-fill input-icon"></i>
+                                        <input type="text" class="form-control-modern" value="<?= htmlspecialchars($user_data['username']) ?>" disabled>
+                                    </div>
+                                    <small class="form-hint">Username cannot be changed</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label class="form-label-modern">Email</label>
+                                    <div class="input-with-icon">
+                                        <i class="bi bi-lock-fill input-icon"></i>
+                                        <input type="email" class="form-control-modern" value="<?= htmlspecialchars($user_data['email']) ?>" disabled>
+                                    </div>
+                                    <small class="form-hint">Email cannot be changed</small>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-control" value="<?= htmlspecialchars($user_data['email']) ?>" disabled>
-                            <small class="form-text text-muted">Email cannot be changed</small>
-                        </div>
-                    </div>
 
-                    <div class="mb-3">
-                        <label for="full_name" class="form-label">Full Name *</label>
-                        <input type="text" class="form-control" id="full_name" name="full_name" 
-                               value="<?= htmlspecialchars($user_data['full_name'] ?? '') ?>" required>
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="phone" class="form-label">Phone</label>
-                        <input type="tel" class="form-control" id="phone" name="phone" 
-                               value="<?= htmlspecialchars($user_data['phone'] ?? '') ?>">
-                    </div>
-
-                    <hr class="my-4">
-
-                    <h5 class="mb-3">Change Password (Optional)</h5>
-                    <p class="text-muted small">Leave blank if you don't want to change your password</p>
-
-                    <div class="mb-3">
-                        <label for="current_password" class="form-label">Current Password</label>
-                        <input type="password" class="form-control" id="current_password" name="current_password">
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="new_password" class="form-label">New Password</label>
-                            <input type="password" class="form-control" id="new_password" name="new_password">
-                            <small class="form-text text-muted">At least 6 characters</small>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="confirm_password" class="form-label">Confirm New Password</label>
-                            <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                        <div class="row g-4 mt-2">
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label for="full_name" class="form-label-modern">Full Name *</label>
+                                    <input type="text" class="form-control-modern" id="full_name" name="full_name" 
+                                           value="<?= htmlspecialchars($user_data['full_name'] ?? '') ?>" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label for="phone" class="form-label-modern">Phone</label>
+                                    <input type="tel" class="form-control-modern" id="phone" name="phone" 
+                                           value="<?= htmlspecialchars($user_data['phone'] ?? '') ?>">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <small class="text-muted">Member since: <?= date('F j, Y', strtotime($user_data['created_at'])) ?></small>
+                    <!-- Change Password Section -->
+                    <div class="profile-section mt-5">
+                        <h5 class="section-title"><i class="bi bi-shield-lock me-2"></i>Change Password</h5>
+                        <p class="section-subtitle">Leave blank if you don't want to change your password</p>
+
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <div class="form-group-modern">
+                                    <label for="current_password" class="form-label-modern">Current Password</label>
+                                    <input type="password" class="form-control-modern" id="current_password" name="current_password" placeholder="Enter your current password">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-4 mt-2">
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label for="new_password" class="form-label-modern">New Password</label>
+                                    <input type="password" class="form-control-modern" id="new_password" name="new_password" placeholder="At least 6 characters">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label for="confirm_password" class="form-label-modern">Confirm New Password</label>
+                                    <input type="password" class="form-control-modern" id="confirm_password" name="confirm_password" placeholder="Re-enter new password">
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                    <!-- Member Info & Submit Button -->
+                    <div class="profile-footer">
+                        <div class="member-since">
+                            <i class="bi bi-calendar-check me-2"></i>
+                            <small>Member since <?= date('F j, Y', strtotime($user_data['created_at'])) ?></small>
+                        </div>
+                        <button type="submit" class="btn btn-update-profile">
+                            <i class="bi bi-check-circle me-2"></i>Update Profile
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

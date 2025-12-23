@@ -180,11 +180,11 @@ ob_start();
                     
                     <div class="card-footer bg-transparent border-top-0">
                         <a href="product_detail.php?id=<?= $row["id"] ?>" 
-                           class="btn btn-primary btn-sm w-100 mb-2">
+                           class="btn btn-primary btn-sm w-100 mb-2 text-center">
                             View Details
                         </a>
                         <?php if ($row["stock_quantity"] > 0): ?>
-                            <button class="btn btn-success btn-sm w-100 add-to-cart" 
+                            <button class="btn btn-success btn-sm w-100 add-to-cart text-center" 
                                     data-id="<?= $row["id"] ?>">
                                 Add to Cart
                             </button>
@@ -216,12 +216,26 @@ ob_start();
     // Close the database connection
     $conn->close();
     ?>
-</div>
 
-<?php
-// Capture the content and store it in $pageContent
-$pageContent = ob_get_clean();
+    <!-- Featured Brands Section -->
+    <div class="featured-brands">
+        <div class="container">
+            <h3>Trusted by Leading Brands</h3>
+            <div class="brand-logos">
+                <img src="https://logos-world.net/wp-content/uploads/2020/04/Apple-Logo.png" alt="Apple" class="brand-logo">
+                <img src="https://logos-world.net/wp-content/uploads/2020/04/Samsung-Logo.png" alt="Samsung" class="brand-logo">
+                <img src="https://logos-world.net/wp-content/uploads/2020/09/Google-Logo.png" alt="Google" class="brand-logo">
+                <img src="https://logos-world.net/wp-content/uploads/2020/08/Dell-Logo.png" alt="Dell" class="brand-logo">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/HP_logo_2012.svg/2048px-HP_logo_2012.svg.png" alt="HP" class="brand-logo">
+                <img src="https://logos-world.net/wp-content/uploads/2020/07/Asus-Logo.png" alt="ASUS" class="brand-logo">
+            </div>
+        </div>
+    </div>
 
-// Include the template
-include 'includes/template.php';
+    <?php
+    // Capture the content and store it in $pageContent
+    $pageContent = ob_get_clean();
+
+    // Include the template
+    include 'includes/template.php';
 ?>

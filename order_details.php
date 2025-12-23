@@ -50,16 +50,16 @@ ob_start();
 ?>
 
 <div class="row">
-    <div class="col-md-3 mb-4">
+    <div class="col-md-3 mb-4 profile-sidebar">
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Account Menu</h5>
-                <ul class="list-unstyled">
-                    <li class="mb-2"><a href="profile.php" class="text-decoration-none" style="color: #764ba2;">My Profile</a></li>
-                    <li class="mb-2"><a href="orders.php" class="text-decoration-none fw-bold" style="color: white; background-color: #764ba2; padding: 0.5rem 1rem; border-radius: 0.5rem; display: block;">My Orders</a></li>
-                    <li class="mb-2"><a href="wishlist.php" class="text-decoration-none" style="color: #764ba2;"><i class="bi bi-heart me-1"></i>My Wishlist</a></li>
-                    <li class="mb-2"><a href="Cart.php" class="text-decoration-none" style="color: #764ba2;">My Cart</a></li>
-                    <li class="mb-2"><a href="logout.php" class="text-decoration-none text-danger">Logout</a></li>
+                <ul class="list-unstyled profile-menu">
+                    <li class="mb-2"><a href="profile.php" class="profile-menu-link"><i class="bi bi-person-circle me-2"></i>My Profile</a></li>
+                    <li class="mb-2"><a href="orders.php" class="profile-menu-link active"><i class="bi bi-box-seam me-2"></i>My Orders</a></li>
+                    <li class="mb-2"><a href="wishlist.php" class="profile-menu-link"><i class="bi bi-heart me-2"></i>My Wishlist</a></li>
+                    <li class="mb-2"><a href="Cart.php" class="profile-menu-link"><i class="bi bi-cart3 me-2"></i>My Cart</a></li>
+                    <li class="mb-2"><a href="logout.php" class="profile-menu-link logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                 </ul>
             </div>
         </div>

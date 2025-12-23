@@ -135,67 +135,109 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ob_start();
 ?>
 
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h2 class="card-title text-center mb-4">Create Account</h2>
+<div class="auth-container">
+    <div class="auth-card auth-card-large">
+        <!-- Auth Header -->
+        <div class="auth-header">
+            <div class="auth-icon">
+                <i class="bi bi-person-plus-fill"></i>
+            </div>
+            <h2 class="auth-title">Create Your Account</h2>
+            <p class="auth-subtitle">Join TechHub Electronics today</p>
+        </div>
 
-                <?php if (!empty($errors)): ?>
-                    <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            <?php foreach ($errors as $error): ?>
-                                <li><?= htmlspecialchars($error) ?></li>
-                            <?php endforeach; ?>
-                        </ul>
+        <?php if (!empty($errors)): ?>
+            <div class="alert alert-danger auth-alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <ul class="mb-0">
+                    <?php foreach ($errors as $error): ?>
+                        <li><?= htmlspecialchars($error) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+
+        <!-- Signup Form -->
+        <form method="POST" action="signup.php" class="auth-form">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="form-group-auth">
+                        <label for="username" class="form-label-auth">
+                            <i class="bi bi-at me-2"></i>Username *
+                        </label>
+                        <input type="text" class="form-control-auth" id="username" name="username" 
+                               value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" 
+                               placeholder="Choose a username" required>
+                        <small class="form-hint-auth">Letters, numbers, and underscores only</small>
                     </div>
-                <?php endif; ?>
+                </div>
 
-                <form method="POST" action="signup.php">
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username *</label>
-                        <input type="text" class="form-control" id="username" name="username" 
-                               value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" required>
-                        <small class="form-text text-muted">Letters, numbers, and underscores only</small>
+                <div class="col-md-6">
+                    <div class="form-group-auth">
+                        <label for="email" class="form-label-auth">
+                            <i class="bi bi-envelope-fill me-2"></i>Email *
+                        </label>
+                        <input type="email" class="form-control-auth" id="email" name="email" 
+                               value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" 
+                               placeholder="your@email.com" required>
                     </div>
+                </div>
 
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email *</label>
-                        <input type="email" class="form-control" id="email" name="email" 
-                               value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
+                <div class="col-md-6">
+                    <div class="form-group-auth">
+                        <label for="full_name" class="form-label-auth">
+                            <i class="bi bi-person-fill me-2"></i>Full Name *
+                        </label>
+                        <input type="text" class="form-control-auth" id="full_name" name="full_name" 
+                               value="<?= htmlspecialchars($_POST['full_name'] ?? '') ?>" 
+                               placeholder="Enter your full name" required>
                     </div>
+                </div>
 
-                    <div class="mb-3">
-                        <label for="full_name" class="form-label">Full Name *</label>
-                        <input type="text" class="form-control" id="full_name" name="full_name" 
-                               value="<?= htmlspecialchars($_POST['full_name'] ?? '') ?>" required>
+                <div class="col-md-6">
+                    <div class="form-group-auth">
+                        <label for="phone" class="form-label-auth">
+                            <i class="bi bi-telephone-fill me-2"></i>Phone
+                        </label>
+                        <input type="tel" class="form-control-auth" id="phone" name="phone" 
+                               value="<?= htmlspecialchars($_POST['phone'] ?? '') ?>" 
+                               placeholder="+20 123 456 7890">
                     </div>
+                </div>
 
-                    <div class="mb-3">
-                        <label for="phone" class="form-label">Phone</label>
-                        <input type="tel" class="form-control" id="phone" name="phone" 
-                               value="<?= htmlspecialchars($_POST['phone'] ?? '') ?>">
+                <div class="col-md-6">
+                    <div class="form-group-auth">
+                        <label for="password" class="form-label-auth">
+                            <i class="bi bi-lock-fill me-2"></i>Password *
+                        </label>
+                        <input type="password" class="form-control-auth" id="password" name="password" 
+                               placeholder="Create a password" required>
+                        <small class="form-hint-auth">At least 6 characters</small>
                     </div>
+                </div>
 
-
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password *</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                        <small class="form-text text-muted">At least 6 characters</small>
+                <div class="col-md-6">
+                    <div class="form-group-auth">
+                        <label for="confirm_password" class="form-label-auth">
+                            <i class="bi bi-lock-fill me-2"></i>Confirm Password *
+                        </label>
+                        <input type="password" class="form-control-auth" id="confirm_password" name="confirm_password" 
+                               placeholder="Confirm your password" required>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="confirm_password" class="form-label">Confirm Password *</label>
-                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary w-100">Sign Up</button>
-                </form>
-
-                <div class="text-center mt-3">
-                    <p class="mb-0">Already have an account? <a href="login.php">Login here</a></p>
                 </div>
             </div>
+
+            <button type="submit" class="btn-auth-primary">
+                <i class="bi bi-check-circle me-2"></i>Create Account
+            </button>
+        </form>
+
+        <!-- Auth Footer -->
+        <div class="auth-footer">
+            <p class="auth-footer-text">
+                Already have an account? 
+                <a href="login.php" class="auth-link">Sign in here</a>
+            </p>
         </div>
     </div>
 </div>

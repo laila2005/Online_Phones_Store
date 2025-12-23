@@ -103,47 +103,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ob_start();
 ?>
 
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h2 class="card-title text-center mb-4">Login</h2>
-
-                <?php if ($signup_success): ?>
-                    <div class="alert alert-success">
-                        <?= htmlspecialchars($signup_success) ?>
-                    </div>
-                <?php endif; ?>
-
-                <?php if (!empty($errors)): ?>
-                    <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            <?php foreach ($errors as $error): ?>
-                                <li><?= htmlspecialchars($error) ?></li>
-                            <?php endforeach; ?>
-                        </ul>
-                    </div>
-                <?php endif; ?>
-
-                <form method="POST" action="login.php">
-                    <div class="mb-3">
-                        <label for="username_or_email" class="form-label">Username or Email</label>
-                        <input type="text" class="form-control" id="username_or_email" name="username_or_email" 
-                               value="<?= htmlspecialchars($_POST['username_or_email'] ?? '') ?>" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary w-100">Login</button>
-                </form>
-
-                <div class="text-center mt-3">
-                    <p class="mb-0">Don't have an account? <a href="signup.php">Sign up here</a></p>
-                </div>
+<div class="auth-container">
+    <div class="auth-card">
+        <!-- Auth Header -->
+        <div class="auth-header">
+            <div class="auth-icon">
+                <i class="bi bi-shield-lock-fill"></i>
             </div>
+            <h2 class="auth-title">Welcome Back</h2>
+            <p class="auth-subtitle">Sign in to your TechHub Electronics account</p>
+        </div>
+
+        <?php if ($signup_success): ?>
+            <div class="alert alert-success auth-alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <?= htmlspecialchars($signup_success) ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (!empty($errors)): ?>
+            <div class="alert alert-danger auth-alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <ul class="mb-0">
+                    <?php foreach ($errors as $error): ?>
+                        <li><?= htmlspecialchars($error) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+
+        <!-- Login Form -->
+        <form method="POST" action="login.php" class="auth-form">
+            <div class="form-group-auth">
+                <label for="username_or_email" class="form-label-auth">
+                    <i class="bi bi-person-circle me-2"></i>Username or Email
+                </label>
+                <input type="text" class="form-control-auth" id="username_or_email" name="username_or_email" 
+                       value="<?= htmlspecialchars($_POST['username_or_email'] ?? '') ?>" 
+                       placeholder="Enter your username or email" required>
+            </div>
+
+            <div class="form-group-auth">
+                <label for="password" class="form-label-auth">
+                    <i class="bi bi-lock-fill me-2"></i>Password
+                </label>
+                <input type="password" class="form-control-auth" id="password" name="password" 
+                       placeholder="Enter your password" required>
+            </div>
+
+            <button type="submit" class="btn-auth-primary">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+            </button>
+        </form>
+
+        <!-- Auth Footer -->
+        <div class="auth-footer">
+            <p class="auth-footer-text">
+                Don't have an account? 
+                <a href="signup.php" class="auth-link">Create one now</a>
+            </p>
         </div>
     </div>
 </div>
