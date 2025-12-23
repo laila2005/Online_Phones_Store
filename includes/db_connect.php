@@ -22,6 +22,5 @@ if ($conn->connect_error) {
 // Optional: Set the character set to UTF-8 for proper handling of all characters
 $conn->set_charset("utf8mb4");
 
-// The $conn variable now holds the active database connection.
-// This file will be included in every PHP file that needs to talk to the database.
+
 ?>
