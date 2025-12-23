@@ -112,7 +112,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['delete_image']) && !i
                 $upload_path = $upload_dir . $new_filename;
 
                 if (move_uploaded_file($tmp_name, $upload_path)) {
-                    $image_url = "/Online_Phones_Store/uploads/products/" . $new_filename;
+                    $image_url = "/uploads/products/" . $new_filename;
                     $alt_text = $name . " - Image";
                     $is_primary = empty($product_images) ? 1 : 0;
                     $display_order = count($product_images) + $key;
