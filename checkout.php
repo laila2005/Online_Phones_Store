@@ -8,7 +8,7 @@ require_once 'includes/db_connect.php';
 
 require_login('checkout.php');
 
-$pageTitle = "Checkout - Online Phones Store";
+$pageTitle = "Checkout - TechHub Electronics";
 
 $user_id = get_current_user_id();
 $stmt = $conn->prepare("SELECT full_name, email, phone FROM users WHERE id = ?");

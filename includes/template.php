@@ -8,7 +8,7 @@ if (!defined("SECURE_ACCESS")) {
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title><?= isset($pageTitle) ? htmlspecialchars($pageTitle) : "Online Phones Store"; ?></title>
+    <title><?= isset($pageTitle) ? htmlspecialchars($pageTitle) : "TechHub Electronics - Your Complete Electronics Store"; ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap 5 CSS -->
@@ -27,7 +27,7 @@ if (!defined("SECURE_ACCESS")) {
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand" href="index.php">Online Phones Store</a>
+        <a class="navbar-brand" href="index.php"><i class="bi bi-lightning-charge-fill me-2"></i>TechHub Electronics</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -73,7 +73,7 @@ if (!defined("SECURE_ACCESS")) {
 
 <footer class="text-center py-3 mt-4">
     <div class="container">
-        <small class="text-muted">&copy; <?= date('Y'); ?> Online Phones Store. All rights reserved.</small>
+        <small class="text-muted">&copy; <?= date('Y'); ?> TechHub Electronics. All rights reserved.</small>
     </div>
 </footer>
 

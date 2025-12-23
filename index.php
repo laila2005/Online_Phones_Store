@@ -8,7 +8,7 @@ session_start();
 include 'includes/db_connect.php';
 
 // Set page title
-$pageTitle = "Home - Online Phones Store";
+$pageTitle = "Home - TechHub Electronics";
 
 // Start output buffering to capture the page content
 ob_start();
@@ -19,8 +19,8 @@ ob_start();
     <div class="container">
         <div class="row">
             <div class="col-12 text-center">
-                <h1 class="display-4">Welcome to Online Phones Store</h1>
-                <p class="lead">Discover the latest tech at unbeatable prices</p>
+                <h1 class="display-4">Welcome to TechHub Electronics</h1>
+                <p class="lead">Your One-Stop Shop for All Electronics - Phones, Laptops, Gaming & More</p>
             </div>
         </div>
     </div>
@@ -30,7 +30,7 @@ ob_start();
     <?php if (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in']): ?>
     <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
         <strong>👋 Welcome back, <?= htmlspecialchars($_SESSION['username']) ?>!</strong> 
-        Happy shopping at Online Phones Store.
+        Happy shopping at TechHub Electronics.
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     <?php endif; ?>
@@ -48,10 +48,10 @@ ob_start();
     <div class="filter-section">
         <div class="row">
             <div class="col-12">
-                <label class="form-label">🏷️ Shop by Category</label>
+                <label class="form-label"><i class="bi bi-grid-3x3-gap-fill me-2"></i>Shop by Category</label>
                 <div class="d-flex flex-wrap gap-2" role="group" aria-label="Category Filter">
                 <a href="index.php" class="btn btn-sm <?= empty($selectedCategory) ? 'btn-primary' : 'btn-outline-primary' ?>">
-                    All Categories
+                    <i class="bi bi-grid-fill me-1"></i>All Categories
                 </a>
                 <?php
                 if ($categoryResult && $categoryResult->num_rows > 0) {
@@ -60,10 +60,22 @@ ob_start();
                         $isActive = ($selectedCategory === $catRow['id']) ? 'btn-primary' : 'btn-outline-primary';
                         $url = 'index.php?category=' . $catRow['id'];
                         
-                        // Get category slug for icon mapping
-                        $categorySlug = strtolower(str_replace(['&', ' '], '', $catRow['slug']));
+                        // Map categories to Bootstrap icons
+                        $iconMap = [
+                            'smartphones' => 'phone-fill',
+                            'laptops&computers' => 'laptop-fill',
+                            'tablets' => 'tablet-fill',
+                            'headphones&speakers' => 'headphones',
+                            'smartwatches&wearables' => 'smartwatch',
+                            'cameras&photography' => 'camera-fill',
+                            'gaming' => 'controller',
+                            'accessories' => 'usb-plug-fill'
+                        ];
                         
-                        echo '<a href="' . $url . '" class="btn btn-sm ' . $isActive . '" data-category="' . $categorySlug . '">' . $category . '</a>';
+                        $categorySlug = strtolower(str_replace(['&', ' '], '', $catRow['slug']));
+                        $icon = isset($iconMap[$categorySlug]) ? $iconMap[$categorySlug] : 'tag-fill';
+                        
+                        echo '<a href="' . $url . '" class="btn btn-sm ' . $isActive . '" data-category="' . $categorySlug . '"><i class="bi bi-' . $icon . ' me-1"></i>' . $category . '</a>';
                     }
                 }
                 ?>
@@ -119,6 +131,12 @@ ob_start();
                     <?php if (!empty($row["compare_at_price"]) && $row["compare_at_price"] > $row["price"]): ?>
                         <span class="badge bg-danger position-absolute top-0 end-0 m-2">Sale</span>
                     <?php endif; ?>
+                    
+                    <button class="btn btn-link position-absolute top-0 end-0 mt-5 me-2 wishlist-btn" 
+                            data-product-id="<?= $row["id"] ?>"
+                            style="z-index: 10; padding: 0.25rem 0.5rem;">
+                        <i class="bi bi-heart" style="font-size: 1.5rem; color: #dc3545;"></i>
+                    </button>
                     
                     <img class="card-img-top" 
                          src="<?= !empty($row['image_url']) ? htmlspecialchars($row['image_url']) : 'https://via.placeholder.com/300x200?text=' . urlencode($row['name']) ?>" 

@@ -6,7 +6,7 @@ session_start();
 
 include 'includes/db_connect.php';
 
-$pageTitle = "Shopping Cart - Online Phones Store";
+$pageTitle = "Shopping Cart - TechHub Electronics";
 
 if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
@@ -200,8 +200,18 @@ ob_start();
             </tbody>
             <tfoot>
                 <tr>
+                    <td colspan="3" class="text-end">Subtotal</td>
+                    <td class="text-end">EGP <?= number_format($grandTotal, 2) ?></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="text-end">Shipping</td>
+                    <td class="text-end">EGP 70.00</td>
+                    <td></td>
+                </tr>
+                <tr>
                     <th colspan="3" class="text-end">Total</th>
-                    <th class="text-end">EGP <?= number_format($grandTotal, 2) ?></th>
+                    <th class="text-end">EGP <?= number_format($grandTotal + 70, 2) ?></th>
                     <th></th>
                 </tr>
             </tfoot>

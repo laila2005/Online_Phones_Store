@@ -7,7 +7,7 @@ require_once 'includes/user_auth.php';
 
 require_login('profile.php');
 
-$pageTitle = "My Profile - Online Phones Store";
+$pageTitle = "My Profile - TechHub Electronics";
 $errors = [];
 $success = false;
 
@@ -100,9 +100,10 @@ ob_start();
             <div class="card-body">
                 <h5 class="card-title">Account Menu</h5>
                 <ul class="list-unstyled">
-                    <li class="mb-2"><a href="profile.php" class="text-decoration-none fw-bold">My Profile</a></li>
-                    <li class="mb-2"><a href="orders.php" class="text-decoration-none">My Orders</a></li>
-                    <li class="mb-2"><a href="Cart.php" class="text-decoration-none">My Cart</a></li>
+                    <li class="mb-2"><a href="profile.php" class="text-decoration-none fw-bold" style="color: white; background-color: #764ba2; padding: 0.5rem 1rem; border-radius: 0.5rem; display: block;">My Profile</a></li>
+                    <li class="mb-2"><a href="orders.php" class="text-decoration-none" style="color: #764ba2;">My Orders</a></li>
+                    <li class="mb-2"><a href="wishlist.php" class="text-decoration-none" style="color: #764ba2;"><i class="bi bi-heart me-1"></i>My Wishlist</a></li>
+                    <li class="mb-2"><a href="Cart.php" class="text-decoration-none" style="color: #764ba2;">My Cart</a></li>
                     <li class="mb-2"><a href="logout.php" class="text-decoration-none text-danger">Logout</a></li>
                 </ul>
             </div>

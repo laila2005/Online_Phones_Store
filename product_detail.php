@@ -42,15 +42,15 @@ if ($productId > 0) {
         $product['images'] = $imageResult->fetch_all(MYSQLI_ASSOC);
         $imageStmt->close();
         
-        $pageTitle = htmlspecialchars($product['name']) . " - Online Phones Store";
+        $pageTitle = htmlspecialchars($product['name']) . " - TechHub Electronics";
     } else {
         $error = "Product not found.";
-        $pageTitle = "Product Not Found - Online Phones Store";
+        $pageTitle = "Product Not Found - TechHub Electronics";
     }
     $stmt->close();
 } else {
     $error = "Invalid product ID.";
-    $pageTitle = "Error - Online Phones Store";
+    $pageTitle = "Error - TechHub Electronics";
 }
 
 // Start output buffering

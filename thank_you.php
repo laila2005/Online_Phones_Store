@@ -2,7 +2,7 @@
 define("SECURE_ACCESS", true);
 session_start();
 
-$pageTitle = "Order Confirmation - Online Phones Store";
+$pageTitle = "Order Confirmation - TechHub Electronics";
 
 $order = isset($_SESSION['last_order']) ? $_SESSION['last_order'] : null;
 
@@ -16,6 +16,7 @@ $orderNumber = htmlspecialchars($order['order_number']);
 $orderId = (int)$order['order_id'];
 $subtotal = isset($order['subtotal']) ? (float)$order['subtotal'] : (float)$order['total_amount'];
 $discountAmount = isset($order['discount_amount']) ? (float)$order['discount_amount'] : 0;
+$shippingCost = isset($order['shipping_cost']) ? (float)$order['shipping_cost'] : 70.00;
 $totalAmount = (float)$order['total_amount'];
 $couponCode = isset($order['coupon_code']) ? $order['coupon_code'] : '';
 $paymentMethod = $order['payment_method'] === 'cash_on_delivery' ? 'Cash on Delivery' : 'Card Payment';
@@ -116,6 +117,10 @@ ob_start();
                                 <td class="text-end text-success">-EGP <?= number_format($discountAmount, 2) ?></td>
                             </tr>
                             <?php endif; ?>
+                            <tr>
+                                <td colspan="4" class="text-end">Shipping:</td>
+                                <td class="text-end">EGP <?= number_format($shippingCost, 2) ?></td>
+                            </tr>
                             <tr>
                                 <td colspan="4" class="text-end fw-bold">Total Amount:</td>
                                 <td class="text-end fw-bold text-success fs-5">EGP <?= number_format($totalAmount, 2) ?></td>

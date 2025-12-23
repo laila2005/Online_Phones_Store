@@ -4,7 +4,7 @@ session_start();
 
 require_once 'includes/db_connect.php';
 
-$pageTitle = "Login - Online Phones Store";
+$pageTitle = "Login - TechHub Electronics";
 $errors = [];
 $signup_success = $_SESSION['signup_success'] ?? '';
 unset($_SESSION['signup_success']);

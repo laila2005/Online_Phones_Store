@@ -5,7 +5,7 @@ session_start();
 
 include 'includes/db_connect.php';
 
-$pageTitle = "Checkout Processing - Online Phones Store";
+$pageTitle = "Checkout Processing - TechHub Electronics";
 
 $name = isset($_POST['customer_name']) ? trim((string)$_POST['customer_name']) : '';
 $email = isset($_POST['customer_email']) ? trim((string)$_POST['customer_email']) : '';
@@ -191,7 +191,10 @@ if (!empty($promoCode)) {
     }
 }
 
-$totalAmount = $subtotal - $discountAmount;
+// Add shipping cost
+$shippingCost = 70.00;
+
+$totalAmount = $subtotal - $discountAmount + $shippingCost;
 if ($totalAmount < 0) {
     $totalAmount = 0;
 }
@@ -231,19 +234,40 @@ try {
         $userId = (int)$_SESSION['user_id'];
     }
 
-    // Store shipping address in notes field for now (or create address record)
-    $notes = "Shipping Address: " . $address . "\nCustomer: " . $name . "\nEmail: " . $email . "\nPhone: " . $phone;
-    if (!empty($couponCode)) {
-        $notes .= "\nCoupon Applied: " . $couponCode . " - " . $couponDescription;
+    // Create shipping address record
+    $shippingAddressId = null;
+    if ($userId) {
+        // For logged-in users, create address in user_addresses table
+        $sqlAddress = "INSERT INTO user_addresses (user_id, full_name, phone, address_line1, city, state, postal_code, is_default) 
+                       VALUES (?, ?, ?, ?, '', '', '', 0)";
+        $stmtAddress = $conn->prepare($sqlAddress);
+        if ($stmtAddress) {
+            $stmtAddress->bind_param('isss', $userId, $name, $phone, $address);
+            if ($stmtAddress->execute()) {
+                $shippingAddressId = (int)$conn->insert_id;
+            }
+            $stmtAddress->close();
+        }
     }
 
-    $sqlOrder = "INSERT INTO orders (user_id, order_number, subtotal, discount_amount, total_amount, payment_method, notes) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    // Prepare notes with coupon info if applicable
+    $notes = "";
+    if (!empty($couponCode)) {
+        $notes = "Coupon Applied: " . $couponCode . " - " . $couponDescription;
+    }
+    // For guest users, store address in notes as fallback
+    if (!$userId) {
+        $notes .= ($notes ? "\n\n" : "") . "Shipping Address: " . $address . "\nCustomer: " . $name . "\nEmail: " . $email . "\nPhone: " . $phone;
+    }
+
+    $sqlOrder = "INSERT INTO orders (user_id, order_number, subtotal, discount_amount, shipping_cost, total_amount, payment_method, shipping_address_id, notes) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmtOrder = $conn->prepare($sqlOrder);
     if (!$stmtOrder) {
         throw new Exception('Failed to prepare order insert: ' . $conn->error);
     }
 
-    $stmtOrder->bind_param('isdddss', $userId, $orderNumber, $subtotal, $discountAmount, $totalAmount, $paymentMethod, $notes);
+    $stmtOrder->bind_param('isddddsis', $userId, $orderNumber, $subtotal, $discountAmount, $shippingCost, $totalAmount, $paymentMethod, $shippingAddressId, $notes);
     if (!$stmtOrder->execute()) {
         throw new Exception('Failed to create the order.');
     }
@@ -281,6 +305,7 @@ try {
         'customer_phone' => $phone,
         'subtotal' => $subtotal,
         'discount_amount' => $discountAmount,
+        'shipping_cost' => $shippingCost,
         'total_amount' => $totalAmount,
         'coupon_code' => $couponCode,
         'payment_method' => $paymentMethod,
